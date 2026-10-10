@@ -112,17 +112,34 @@ public struct GeodesicIntegrator: Sendable {
     /// One Dormand–Prince step of size `h` from `y`, with `k1 = f(y)` supplied (FSAL).
     /// Returns the fifth-order solution, the embedded error estimate, and k7 = f(y_new).
     func dormandPrince(_ y: StateVector, _ h: Double, _ k1: StateVector) -> (y: StateVector, err: StateVector, k7: StateVector) {
-        let k2 = derivative(y + h * (1.0 / 5.0) * k1)
-        let k3 = derivative(y + h * (3.0 / 40.0 * k1 + 9.0 / 40.0 * k2))
-        let k4 = derivative(y + h * (44.0 / 45.0 * k1 - 56.0 / 15.0 * k2 + 32.0 / 9.0 * k3))
-        let k5 = derivative(y + h * (19372.0 / 6561.0 * k1 - 25360.0 / 2187.0 * k2 + 64448.0 / 6561.0 * k3 - 212.0 / 729.0 * k4))
-        let k6 = derivative(y + h * (9017.0 / 3168.0 * k1 - 355.0 / 33.0 * k2 + 46732.0 / 5247.0 * k3
-                                    + 49.0 / 176.0 * k4 - 5103.0 / 18656.0 * k5))
-        let yNew = y + h * (35.0 / 384.0 * k1 + 500.0 / 1113.0 * k3 + 125.0 / 192.0 * k4
-                            - 2187.0 / 6784.0 * k5 + 11.0 / 84.0 * k6)
+        // The tableau is typed as Double constants and the stage sums are built step by step. With literal
+        // coefficients mixed into SIMD arithmetic, Swift 6.3 (Xcode 26) cannot type-check these expressions
+        // in reasonable time. The evaluation order is unchanged, so the results are bit-identical.
+        let a21: Double = 1.0 / 5.0
+        let a31: Double = 3.0 / 40.0, a32: Double = 9.0 / 40.0
+        let a41: Double = 44.0 / 45.0, a42: Double = 56.0 / 15.0, a43: Double = 32.0 / 9.0
+        let a51: Double = 19372.0 / 6561.0, a52: Double = 25360.0 / 2187.0, a53: Double = 64448.0 / 6561.0, a54: Double = 212.0 / 729.0
+        let a61: Double = 9017.0 / 3168.0, a62: Double = 355.0 / 33.0, a63: Double = 46732.0 / 5247.0
+        let a64: Double = 49.0 / 176.0, a65: Double = 5103.0 / 18656.0
+        let b1: Double = 35.0 / 384.0, b3: Double = 500.0 / 1113.0, b4: Double = 125.0 / 192.0
+        let b5: Double = 2187.0 / 6784.0, b6: Double = 11.0 / 84.0
+        let e1: Double = 71.0 / 57600.0, e3: Double = 71.0 / 16695.0, e4: Double = 71.0 / 1920.0
+        let e5: Double = 17253.0 / 339200.0, e6: Double = 22.0 / 525.0, e7: Double = 1.0 / 40.0
+
+        let k2 = derivative(y + h * a21 * k1)
+        let s3: StateVector = a31 * k1 + a32 * k2
+        let k3 = derivative(y + h * s3)
+        let s4: StateVector = a41 * k1 - a42 * k2 + a43 * k3
+        let k4 = derivative(y + h * s4)
+        let s5: StateVector = a51 * k1 - a52 * k2 + a53 * k3 - a54 * k4
+        let k5 = derivative(y + h * s5)
+        let s6: StateVector = a61 * k1 - a62 * k2 + a63 * k3 + a64 * k4 - a65 * k5
+        let k6 = derivative(y + h * s6)
+        let sNew: StateVector = b1 * k1 + b3 * k3 + b4 * k4 - b5 * k5 + b6 * k6
+        let yNew = y + h * sNew
         let k7 = derivative(yNew)
-        let err = h * (71.0 / 57600.0 * k1 - 71.0 / 16695.0 * k3 + 71.0 / 1920.0 * k4
-                       - 17253.0 / 339200.0 * k5 + 22.0 / 525.0 * k6 - 1.0 / 40.0 * k7)
+        let sErr: StateVector = e1 * k1 - e3 * k3 + e4 * k4 - e5 * k5 + e6 * k6 - e7 * k7
+        let err = h * sErr
         return (yNew, err, k7)
     }
 
