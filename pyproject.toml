@@ -11,4 +11,5 @@ dependencies = [
 [dependency-groups]
 dev = [
     "colour-science>=0.4.7",
+    "jsonschema>=4.26.0",
 ]

@@ -94,6 +94,10 @@ public struct RenderConfig: Sendable, Equatable {
     public var exposureStops = 0.0
     /// Maximum accepted integrator steps per ray; rays that need more are reported as unresolved.
     public var maxStepsPerRay = NumericalDefaults.stepBudget
+    /// Y-weighted radiance (W m⁻² sr⁻¹) that maps to 1.0 in the output. nil (the default) normalises to the hottest
+    /// unshifted disk emission of this configuration. A movie sets one value for all its frames so that brightness
+    /// changes between frames are physical (spec FR-013).
+    public var referenceRadianceOverride: Double?
 
     public init() {}
 
@@ -129,6 +133,10 @@ public struct RenderConfig: Sendable, Equatable {
         try require(maxStepsPerRay > 0, "--max-steps", "step budget must be a positive number (got \(maxStepsPerRay))")
         try require(disk.accretionRateEddington.isFinite && disk.accretionRateEddington > 0, "--accretion-rate",
                     "accretion rate must be a positive Eddington fraction (got \(fmt(disk.accretionRateEddington)))")
+        if let reference = referenceRadianceOverride {
+            try require(reference.isFinite && reference > 0, "--reference-radiance",
+                        "the reference radiance must be a positive, finite number (got \(fmt(reference)))")
+        }
 
         let kerr = Kerr(spin: a)
         let ergosphere = kerr.ergosphereRadius(mu: observer.mu)

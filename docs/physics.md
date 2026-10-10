@@ -99,7 +99,30 @@ curve per channel, and the sRGB transfer function. This is presentation only; th
 | Stars as Gaussian discs | Illustrative sky | Synthetic | Not a catalogue |
 | Out-of-gamut colours clipped | sRGB gamut | Very cool or very hot disks | Affects hue only at gamut edges |
 | GPU backend: float32 integration | Apple GPUs have no 64-bit floats; step control tightened (radial 10⁻⁵, angular 10⁻⁶); rays passing within sin²θ < 0.02 of a pole re-traced in float64 on the CPU | Same physics, lower arithmetic precision | Measured vs the CPU: 100 % same outcome, crossing radius 99th percentile 7×10⁻⁷, sky direction within 10⁻⁴ rad for ≥ 99.9 % of sky rays, radiance 99th percentile ≤ 10⁻⁴ (see below) |
+| Animation = a sequence of static-observer views | Each frame is a complete, independent render of a stationary, axisymmetric hole and disk; the sweep changes the viewpoint (inclination, distance) or the parameter (spin) between frames | Viewpoint changes of a static scene | No motion of the gas, no light-travel-time delay between frames, no observer-velocity aberration; nothing is interpolated, blurred or synthesised between frames |
+| One exposure reference per movie | The reference radiance (hottest unshifted disk emission) is fixed for all frames at the largest value of the sweep | Spin sweeps, where the reference differs per frame | Without it brightness would jump for a non-physical reason; measured frame-to-frame luma change 0.7 % in a spin sweep |
+| Lossy video (H.264, 4:2:0 chroma) | The movie is for viewing; the PNG/EXR frames remain the physical record | All sizes | PSNR ≥ 35 dB against the source frames at 640×360 and above (ffmpeg 36–41 dB, built-in encoder 38–42 dB at the default quality); colour of single-pixel stars is blurred by the 4:2:0 subsampling |
 | Unresolved rays excluded from averaging | Counted, never coloured | < 0.1 % of rays in tests | Reported in diagnostics; exit code 4 above 0.1 % |
+
+## Animations and movies
+
+`bhsim movie animate` renders a sequence of frames, each a full render by the same validated code (CPU or GPU
+backend) with one viewing parameter changed linearly from frame to frame: the observer's inclination, the observer's
+distance, or the black hole's spin. The model is stationary and axisymmetric, so the sequence is a series of static
+observers at different positions (or of different holes for a spin sweep), **not** the time evolution of one system:
+the disk gas does not move, light-travel time between frames is not modeled, and an observer who actually moved would
+also see relativistic aberration, which is not included. Nothing is interpolated between frames.
+
+All frames share one brightness reference, the largest per-frame reference of the sweep (research D5). The sky is a
+fixed backdrop defined in these reference units, so it keeps its brightness while the disk brightens or dims with the
+physics. The sample pattern is the same for every frame (the seed is fixed), so a frame is a pure function of its
+settings; the photon ring can still speckle between frames at low sample counts, which is why movies default to 9
+samples per pixel.
+
+The movie file is lossy H.264 (4:2:0 chroma), tagged with BT.709 primaries and matrix and the sRGB transfer function of
+the PNG frames. Measured fidelity against the source frames is in `docs/tolerances.md`. With ffmpeg the file repeats
+byte for byte on one machine and ffmpeg version; the built-in macOS encoder is not deterministic and gives equivalent but
+not identical movies. The frames themselves are exactly reproducible with either.
 
 ## Known limits
 

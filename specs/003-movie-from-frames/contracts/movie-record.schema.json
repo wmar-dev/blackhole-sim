@@ -1,0 +1,285 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "bhsim movie record",
+  "type": "object",
+  "required": [
+    "version",
+    "movie",
+    "source"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "bhsim version"
+    },
+    "movie": {
+      "type": "object",
+      "required": [
+        "file",
+        "codec",
+        "container",
+        "fps",
+        "frameCount",
+        "durationSeconds",
+        "width",
+        "height",
+        "encoder",
+        "colour"
+      ],
+      "properties": {
+        "file": {
+          "type": "string"
+        },
+        "codec": {
+          "const": "h264"
+        },
+        "container": {
+          "const": "mp4"
+        },
+        "fps": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "frameCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "durationSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "encoder": {
+          "type": "object",
+          "required": [
+            "name",
+            "version",
+            "quality"
+          ],
+          "properties": {
+            "name": {
+              "enum": [
+                "ffmpeg",
+                "avfoundation"
+              ]
+            },
+            "version": {
+              "type": "string",
+              "description": "ffmpeg version string, or the macOS version for AVFoundation"
+            },
+            "quality": {
+              "enum": [
+                "high",
+                "standard",
+                "small"
+              ]
+            },
+            "setting": {
+              "type": "string",
+              "description": "e.g. crf=18 or bitsPerPixel=0.25"
+            },
+            "reproducibleFile": {
+              "type": "boolean",
+              "description": "true if the file bytes are expected to repeat exactly (ffmpeg bit-exact mode)"
+            }
+          }
+        },
+        "colour": {
+          "type": "object",
+          "required": [
+            "primaries",
+            "matrix",
+            "transfer",
+            "range",
+            "chroma"
+          ],
+          "properties": {
+            "primaries": {
+              "const": "BT.709"
+            },
+            "matrix": {
+              "const": "BT.709"
+            },
+            "transfer": {
+              "const": "sRGB"
+            },
+            "range": {
+              "const": "limited"
+            },
+            "chroma": {
+              "const": "4:2:0"
+            }
+          }
+        }
+      }
+    },
+    "source": {
+      "enum": [
+        "assembled",
+        "animation"
+      ]
+    },
+    "animation": {
+      "type": "object",
+      "required": [
+        "parameter",
+        "from",
+        "to",
+        "durationSeconds",
+        "fps",
+        "frameCount"
+      ],
+      "properties": {
+        "parameter": {
+          "enum": [
+            "inclination",
+            "distance",
+            "spin"
+          ]
+        },
+        "from": {
+          "type": "number"
+        },
+        "to": {
+          "type": "number"
+        },
+        "durationSeconds": {
+          "type": "number"
+        },
+        "fps": {
+          "type": "number"
+        },
+        "frameCount": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "common": {
+      "type": "object",
+      "description": "Render settings shared by all frames (same fields as the render metadata, swept parameter omitted)"
+    },
+    "backend": {
+      "type": "object",
+      "required": [
+        "name",
+        "precision"
+      ],
+      "properties": {
+        "name": {
+          "enum": [
+            "cpu",
+            "metal"
+          ]
+        },
+        "precision": {
+          "enum": [
+            "float64",
+            "float32"
+          ]
+        }
+      }
+    },
+    "referenceRadiance": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "diagnostics": {
+      "type": "object",
+      "required": [
+        "raysTotal",
+        "unresolved",
+        "raysOverResidualTolerance",
+        "maxResidual",
+        "wallTimeSeconds"
+      ],
+      "properties": {
+        "raysTotal": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unresolved": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "raysOverResidualTolerance": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxResidual": {
+          "type": "number",
+          "minimum": 0
+        },
+        "wallTimeSeconds": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "frames": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "index"
+        ],
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "value": {
+            "type": "number",
+            "description": "Swept parameter value of this frame"
+          },
+          "unresolvedFraction": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "badRayFraction": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "source": {
+            "const": "animation"
+          }
+        },
+        "required": [
+          "source"
+        ]
+      },
+      "then": {
+        "required": [
+          "animation",
+          "common",
+          "backend",
+          "referenceRadiance",
+          "seed",
+          "diagnostics",
+          "frames"
+        ]
+      }
+    }
+  ]
+}

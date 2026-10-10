@@ -38,6 +38,8 @@ swift build -c release
 swift test                                         # the full test suite
 .build/release/bhsim render --backend metal --out out/gpu   # same image on the GPU: 5–7× faster on an M4
 .build/release/bhsim compare                       # CPU vs GPU agreement on five scenes (about 40 s)
+.build/release/bhsim movie animate --sweep inclination --from 85 --to 20 --duration 5 --backend metal --out out/sweep.mp4
+.build/release/bhsim movie assemble --frames out/frames --fps 24 --out out/movie.mp4
 ```
 
 `render` writes three files next to the chosen basename:
@@ -70,6 +72,31 @@ Invalid input is rejected with a message naming the option and its valid range (
 means the image was written but more than 0.1 % of rays were unresolved or out of tolerance. Exit code 5 means
 `--backend metal` was requested but no usable GPU exists (there is no silent fallback to the CPU). See
 [the CLI contract](specs/001-black-hole-image/contracts/cli.md).
+
+## Movies
+
+![Inclination sweep from 85° to 20° of a non-spinning black hole with its disk (5 s, rendered on the GPU)](docs/images/inclination-sweep.webp)
+
+*An inclination sweep from 85° to 20° (`movie animate --sweep inclination --from 85 --to 20 --duration 5 --backend metal`,
+1280×720, 9 samples per pixel). This preview is a reduced animated WebP; the full-quality movie is
+[docs/images/inclination-sweep.mp4](docs/images/inclination-sweep.mp4).*
+
+`bhsim movie animate` renders a movie by sweeping one viewing parameter (`--sweep inclination|distance|spin`,
+`--from`, `--to`) over `--duration` seconds at `--fps`, with every other `render` option held constant. Every frame is a
+complete render, nothing is interpolated, all frames share one brightness reference, and the frames are written to
+`<out>_frames/` as they are made: rerun the same command after an interruption and it continues where it stopped. It
+defaults to 9 samples per pixel (the fixed sample pattern makes the photon ring speckle between frames at 4);
+`--samples 4` gives a quick draft. A 5-second 1280×720 movie takes about 5 minutes on an Apple M4 with `--backend metal`.
+
+`bhsim movie assemble --frames <folder> --fps 24 --out movie.mp4` makes a movie from any folder of numbered PNG frames
+(`frame_0001.png`, …; numbers are sorted numerically, gaps are an error unless `--allow-gaps`).
+
+Encoding uses **ffmpeg** if it is installed (`brew install ffmpeg`): smaller files and byte-identical output for the same
+inputs. Otherwise the encoder built into macOS is used, which needs nothing installed but is not deterministic. Choose
+with `--encoder auto|ffmpeg|avfoundation`; `--quality high|standard|small`. Next to each movie a `<movie>.json` record states
+the settings, encoder, backend, exposure reference and ray diagnostics. Each frame is a stationary view: the disk gas does
+not move and the observer's velocity is not modeled (see [the physics notes](docs/physics.md)). Exit code 6 means the video
+could not be encoded (the frames are kept).
 
 ## How accurate is it?
 

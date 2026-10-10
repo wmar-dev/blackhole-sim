@@ -56,7 +56,7 @@ public struct Renderer: Sendable {
         try config.validate()
         if config.backend == .metal {
             // No silent fallback to the CPU (FR-008): an unavailable GPU is an error.
-            gpu = MetalRayTracer(context: try MetalContext.make(forceUnavailable: forceGPUUnavailable))
+            gpu = MetalRayTracer(context: try MetalContext.cached(forceUnavailable: forceGPUUnavailable))
         } else {
             gpu = nil
         }
@@ -68,7 +68,7 @@ public struct Renderer: Sendable {
         tracer = RayTracer(config: config, settings: settings)
         disk = NovikovThorne(kerr: config.kerr, massSolar: config.blackHole.massSolar,
                              eddingtonFraction: config.disk.accretionRateEddington)
-        referenceRadiance = disk.referenceLuminance(upTo: config.disk.outerRadius)
+        referenceRadiance = config.referenceRadianceOverride ?? disk.referenceLuminance(upTo: config.disk.outerRadius)
     }
 
     /// Traces the ray through continuous pixel coordinates (pixel centres at half-integers).
