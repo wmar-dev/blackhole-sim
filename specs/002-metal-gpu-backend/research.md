@@ -243,3 +243,9 @@ The serial hybrid bound is set by the CPU re-trace of the flagged 7 % of rays (t
 | cool disk | 100 % | 6.2e-7 | 99.993 % | 2.5e-3 | 0.0001 % / 0.040 % | 3.9 % | 8.9× |
 
 Notes: (1) a handful of sky rays (≤ 0.06 %) differ by more than 1e-4 rad (worst 1.1e-2 rad, near-critical rays that graze the photon sphere); this is within the FR-003 allowance of 0.1 %. (2) The shadow check in `compare` is the GPU–CPU shadow-area difference (< 1 %) for all scenes plus the analytic radius error for the non-spinning edge-on scene (CPU 0.0010 %, GPU 0.0011 %); the Kerr-outline (2 %) check for the GPU is covered in the test suite. (3) The "cool disk" scene's image equals the default's because the HDR output is normalised to the hottest unshifted gas; it still exercises a different accretion-rate path. (4) The first scene's speed-up (5.0×) includes GPU pipeline compilation.
+
+## Large renders (Phase 5, US3)
+
+- 3840×2160 at 16 spp, `--backend metal` (release): **45.6 s** against the 331.9 s CPU baseline = **7.3×** (SC-006: ≥ 3×). 132,710,400 rays, 0 unresolved. Peak resident memory 913 MB for the whole process, of which the GPU band buffers are 144 MB (10⁶ samples × 144 B) and the camera rays of a band about 72 MB; the rest is the output image planes (HDR, per-pixel fractions) and the PNG/EXR writers, which scale with the image, not the sample count.
+- Stress test: 10⁶ rays swept across the whole image radius (a = 0.998, 60°) finish in 2 passes; the longest single GPU command is **60 ms** (bound 200 ms, `NumericalDefaults.gpuMaxPassSeconds`), well inside the OS watchdog.
+- Band buffers are bounded by `NumericalDefaults.gpuMaxBufferBytes` (160 MB) however large a band is requested. Renders are bit-identical across runs and across band sizes (1, 1000 and 10⁶ samples), including the `.png` and `.exr` bytes.

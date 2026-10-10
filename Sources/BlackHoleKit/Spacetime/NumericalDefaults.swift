@@ -41,4 +41,11 @@ public enum NumericalDefaults {
     public static let gpuStepsPerPass = 1024
     /// Samples traced per GPU band: bounds GPU and host memory regardless of image size (FR-009; research.md D4).
     public static let gpuBandSamples = 1_000_000
+    /// Bytes of GPU memory per sample held by a band (ray input 32 + state 64 + result 48; contracts/gpu-buffers.md).
+    public static let gpuBytesPerSample = 144
+    /// Hard bound on the GPU buffer bytes of one band, whatever the requested band size (FR-009).
+    public static let gpuMaxBufferBytes = 160_000_000
+    /// A single GPU command must stay well below the operating system's watchdog; the measured longest pass is
+    /// checked against this bound by the stress test (FR-009).
+    public static let gpuMaxPassSeconds = 0.2
 }

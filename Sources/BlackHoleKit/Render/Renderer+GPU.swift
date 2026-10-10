@@ -36,7 +36,7 @@ extension Renderer {
         let samplesPerAxis = Int(Double(config.samplesPerPixel).squareRoot().rounded())
         let perPixel = samplesPerAxis * samplesPerAxis
         let seed = config.sky.seed
-        let rowsPerBand = max(1, NumericalDefaults.gpuBandSamples / (width * perPixel))
+        let rowsPerBand = max(1, gpuBandSamples / (width * perPixel))
         let parameters = GPUKernelParameters(
             config: config, relativeTolerance: Float(NumericalDefaults.gpuRelativeTolerance),
             absoluteTolerance: Float(NumericalDefaults.gpuAbsoluteTolerance),

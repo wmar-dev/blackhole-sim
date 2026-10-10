@@ -122,13 +122,13 @@ Swift package at the repository root, as in feature 001: `Sources/BlackHoleKit/<
 
 ### Tests for User Story 3 (write first, confirm failing)
 
-- [ ] T030 [P] [US3] Write `Tests/BlackHoleKitTests/Metal/MetalDeterminismTests.swift`: two GPU renders of the same inputs have identical `.png` and `.exr` bytes and identical JSON except wall time; renders with different band sizes (test hook `bandSampleCount`) are identical to each other (SC-005, FR-010)
-- [ ] T031 [P] [US3] Write `Tests/BlackHoleKitTests/Metal/MetalLargeRenderTests.swift`: a stress test of 10⁶ near-critical rays (a = 0.998 around the shadow edge) completes, recording the longest single GPU pass and requiring it under 200 ms (watchdog safety, FR-009); the memory held by the GPU buffers of all bands in flight is bounded (at most 320 MB, i.e. two bands of about 144 MB at 144 bytes per sample) for any image size; and, skipped unless `BHSIM_BENCH=1`, a 3840×2160×16 render completes with progress, bounded peak memory, and at least 3× the speed of the CPU baseline (SC-006)
+- [X] T030 [P] [US3] Write `Tests/BlackHoleKitTests/Metal/MetalDeterminismTests.swift`: two GPU renders of the same inputs have identical `.png` and `.exr` bytes and identical JSON except wall time; renders with different band sizes (test hook `bandSampleCount`) are identical to each other (SC-005, FR-010)
+- [X] T031 [P] [US3] Write `Tests/BlackHoleKitTests/Metal/MetalLargeRenderTests.swift`: a stress test of 10⁶ near-critical rays (a = 0.998 around the shadow edge) completes, recording the longest single GPU pass and requiring it under 200 ms (watchdog safety, FR-009); the memory held by the GPU buffers of all bands in flight is bounded (at most 320 MB, i.e. two bands of about 144 MB at 144 bytes per sample) for any image size; and, skipped unless `BHSIM_BENCH=1`, a 3840×2160×16 render completes with progress, bounded peak memory, and at least 3× the speed of the CPU baseline (SC-006)
 
 ### Implementation for User Story 3
 
-- [ ] T032 [US3] In `Renderer+GPU.swift` and `MetalRayTracer.swift`: make the band size configurable (default about 10⁶ samples, with a hard bound on buffer bytes), record the duration of every pass, tune `stepsPerPass` to keep each pass short, name the pass length, band size and pass-duration bound as constants in `NumericalDefaults.swift` (constitution Principle II), and report progress per band and pass
-- [ ] T033 [US3] Run T030 and T031 and the 3840×2160×16 render under `/usr/bin/time -l`; record the time, the speed-up over the T001 baseline, the peak memory and the longest pass in `research.md` §Results
+- [X] T032 [US3] In `Renderer+GPU.swift` and `MetalRayTracer.swift`: make the band size configurable (default about 10⁶ samples, with a hard bound on buffer bytes), record the duration of every pass, tune `stepsPerPass` to keep each pass short, name the pass length, band size and pass-duration bound as constants in `NumericalDefaults.swift` (constitution Principle II), and report progress per band and pass
+- [X] T033 [US3] Run T030 and T031 and the 3840×2160×16 render under `/usr/bin/time -l`; record the time, the speed-up over the T001 baseline, the peak memory and the longest pass in `research.md` §Results
 
 **Checkpoint**: All three stories work; large renders are fast and bounded.
 

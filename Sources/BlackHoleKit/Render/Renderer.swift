@@ -32,6 +32,8 @@ public struct Renderer: Sendable {
     let disk: NovikovThorne
     /// The GPU ray tracer (`config.backend == .metal`), nil for the CPU backend.
     let gpu: MetalRayTracer?
+    /// Samples per GPU band (clamped to `NumericalDefaults.gpuMaxBufferBytes`).
+    let gpuBandSamples: Int
     /// Y-weighted radiance of the hottest unshifted disk emission: 1.0 in the HDR output.
     public let referenceRadiance: Double
 
@@ -47,8 +49,10 @@ public struct Renderer: Sendable {
     ///   - sky: overrides the sky built from `config.sky` (used by tests).
     ///   - integratorSettings: overrides the default integrator settings (used by tests, e.g. a tiny step budget).
     ///   - forceGPUUnavailable: test hook that simulates a missing GPU for `backend == .metal`.
+    ///   - gpuBandSamples: samples per GPU band (tests vary it to show that the image does not depend on it).
     public init(config: RenderConfig, sky: (any SkyModel)? = nil, integratorSettings: IntegratorSettings? = nil,
-                forceGPUUnavailable: Bool = false) throws {
+                forceGPUUnavailable: Bool = false, gpuBandSamples: Int = NumericalDefaults.gpuBandSamples) throws {
+        self.gpuBandSamples = min(max(gpuBandSamples, 1), NumericalDefaults.gpuMaxBufferBytes / NumericalDefaults.gpuBytesPerSample)
         try config.validate()
         if config.backend == .metal {
             // No silent fallback to the CPU (FR-008): an unavailable GPU is an error.
