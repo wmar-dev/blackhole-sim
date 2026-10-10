@@ -35,3 +35,5 @@
 - The 32-bit precision limit is stated as an assumption and a risk, not as a design. How to manage it (compensated arithmetic, step control, splitting work between GPU and CPU) is for planning.
 - Numeric targets (3× speed-up, 99.9 % outcome agreement, 1 % radiance difference at the 99th percentile) are initial and are expected to be refined by measurement; any loosening needs written justification (Constitution Principle III).
 - The spec deliberately allows a "not achievable" outcome (FR-012) because the request is to try the acceleration.
+
+- 2026-10-10: implementation complete; every success criterion measured and met (research.md §Final results). No tolerance was loosened.

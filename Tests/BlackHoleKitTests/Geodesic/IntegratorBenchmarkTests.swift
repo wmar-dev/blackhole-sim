@@ -48,7 +48,7 @@ import Testing
         let singleSeconds = Double(single.components.seconds) + Double(single.components.attoseconds) * 1e-18
 
         final class Counter: @unchecked Sendable { var value = 0 }
-        let counter = Counter()
+        _ = Counter()
         let parallelStart = clock.now
         let chunk = 16
         DispatchQueue.concurrentPerform(iterations: rays.count / chunk) { c in

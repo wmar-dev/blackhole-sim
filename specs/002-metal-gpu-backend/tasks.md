@@ -86,7 +86,7 @@ Swift package at the repository root, as in feature 001: `Sources/BlackHoleKit/<
 - [X] T020 [US1] Implement `Sources/BlackHoleKit/Render/Renderer+GPU.swift`: plan row bands of about 10⁶ samples, build the float64 camera rays in parallel and convert them to `GPURayInput`, run `MetalRayTracer`, convert results to `RayOutcome` (sky direction from the float32 final state via `AsymptoticDirection` in float64), shade with the existing `radiance(of:ray:)`, aggregate diagnostics (including wall time), and report progress
 - [X] T021 [US1] Enable the GPU backend in `Sources/bhsim/RenderCommand.swift`: remove the rejection of `--backend metal`, validate input first (exit 2), then create the renderer and map `BackendError.unavailable` to `error: --backend: <reason>` and exit code 5; update the help text and exit-code list
 - [X] T022 [US1] Run T014–T016 until they pass; choose the kernel's float32 tolerance from the sweep (relative 10⁻⁴ to 3×10⁻⁶), store it as named constants in `Sources/BlackHoleKit/Spacetime/NumericalDefaults.swift`, and record the sweep (agreement and speed per tolerance) in `research.md` §Tolerance sweep and in `docs/tolerances.md`
-- [ ] T023 [US1] Overlap the CPU shading of band k with the GPU tracing of band k+1 (double buffering) in `Renderer+GPU.swift`, measure each stage separately, run T017, and record the stage times and speed-up in `research.md` §Performance
+- [ ] T023 [US1] (SKIPPED by design: SC-001 met at 7.2× without overlap; reconsider only if a later measurement needs it) Overlap the CPU shading of band k with the GPU tracing of band k+1 (double buffering) in `Renderer+GPU.swift`, measure each stage separately, run T017, and record the stage times and speed-up in `research.md` §Performance
 - [X] T024 [US1] Run quickstart steps 2 and 4 on this machine (default render with both backends, GPU shadow check with `tools/reference/exr_tools.py`) and record the results in `research.md` §Results
 
 **Checkpoint**: User Story 1 works on its own: the GPU renders the same image faster, in agreement with the CPU. This is the MVP.
@@ -141,9 +141,9 @@ Swift package at the repository root, as in feature 001: `Sources/BlackHoleKit/<
 - [X] T036 [P] Update `docs/tolerances.md` with the final GPU tolerances and the evidence behind them (from T022, T029, T033); any loosening relative to the spec's targets carries a written physical justification
 - [X] T037 [P] Update `README.md`: the `--backend` option, the measured speed-up, exit code 5 and the `compare` command
 - [X] T038 [P] Merge the changes of `contracts/cli.md` into `specs/001-black-hole-image/contracts/cli.md` (backend values, `compare`, exit code 5) so the main contract is current
-- [ ] T039 Run the whole of `quickstart.md` end to end on a clean copy of the repository and fix any discrepancy between the document and the actual behavior
-- [ ] T040 Run the full test suite (`swift test`), `bhsim validate` and `bhsim compare`; confirm the CPU renders are unchanged (T003), there are no build warnings, and record the final results in `research.md` §Results
-- [ ] T041 Apply the agreement gate: confirm every tolerance of the spec is met, or that every loosening is justified in writing in `docs/tolerances.md`; set the status of `spec.md` and add the outcome to `checklists/requirements.md` §Notes
+- [X] T039 Run the whole of `quickstart.md` end to end on a clean copy of the repository and fix any discrepancy between the document and the actual behavior
+- [X] T040 Run the full test suite (`swift test`), `bhsim validate` and `bhsim compare`; confirm the CPU renders are unchanged (T003), there are no build warnings, and record the final results in `research.md` §Results
+- [X] T041 Apply the agreement gate: confirm every tolerance of the spec is met, or that every loosening is justified in writing in `docs/tolerances.md`; set the status of `spec.md` and add the outcome to `checklists/requirements.md` §Notes
 
 ---
 
@@ -151,10 +151,10 @@ Swift package at the repository root, as in feature 001: `Sources/BlackHoleKit/<
 
 **Entry condition**: Only if the spike (T013) returns NO-GO, or the agreement tests of T015 or the comparison of T029 miss a tolerance. Otherwise skip this phase and note "not needed" in `research.md` §D2.
 
-- [ ] T042 [P] Mitigation M1: tighten the step cap and tolerance near the photon region in the kernel (`GeodesicKernelSource.swift`); rerun T010, T015 and the sweep; record the effect on agreement and speed in `research.md`
-- [ ] T043 Mitigation M2 (if M1 is not enough): compensated (two-float) accumulation of φ and u in the kernel; rerun the agreement tests; record the effect
-- [ ] T044 Mitigation M3 (if M2 is not enough): have the kernel flag delicate rays (many steps, or a minimum radius within a band of the photon orbit) and re-trace only those on the CPU in float64 in `Renderer+GPU.swift`; rerun the agreement tests and the speed test; record the fraction re-traced and the effect
-- [ ] T045 If the targets are still not met: leave `--backend metal` disabled in `RenderCommand.swift` with a message pointing to the findings, document the measured disagreement in `research.md` and `docs/physics.md`, and set the status of `spec.md` to "not achievable" (FR-012)
+- [ ] T042 (NOT NEEDED: M3 adopted in the spike and every target met) [P] Mitigation M1: tighten the step cap and tolerance near the photon region in the kernel (`GeodesicKernelSource.swift`); rerun T010, T015 and the sweep; record the effect on agreement and speed in `research.md`
+- [ ] T043 (NOT NEEDED: M3 adopted in the spike and every target met) Mitigation M2 (if M1 is not enough): compensated (two-float) accumulation of φ and u in the kernel; rerun the agreement tests; record the effect
+- [ ] T044 (NOT NEEDED: M3 adopted in the spike and every target met) Mitigation M3 (if M2 is not enough): have the kernel flag delicate rays (many steps, or a minimum radius within a band of the photon orbit) and re-trace only those on the CPU in float64 in `Renderer+GPU.swift`; rerun the agreement tests and the speed test; record the fraction re-traced and the effect
+- [ ] T045 (NOT NEEDED: M3 adopted in the spike and every target met) If the targets are still not met: leave `--backend metal` disabled in `RenderCommand.swift` with a message pointing to the findings, document the measured disagreement in `research.md` and `docs/physics.md`, and set the status of `spec.md` to "not achievable" (FR-012)
 
 ---
 

@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-09
 
-**Status**: Draft
+**Status**: Implemented (all targets met; see research.md §Final results)
 
 **Input**: User description: "try acceleration with metal"
 
