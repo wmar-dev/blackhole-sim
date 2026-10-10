@@ -105,7 +105,7 @@ A user can see afterwards exactly how a movie was made: which frames and setting
 - **SC-001**: A user can turn an existing folder of 120 frames of 1920×1080 into a movie with one command, and the movie is written in under 30 seconds on the reference machine (an Apple M4).
 - **SC-002**: A 5-second, 24 frames-per-second, 1280×720 animation (120 frames, 4 samples per pixel) can be rendered and assembled with the GPU backend in under 5 minutes on the reference machine.
 - **SC-003**: The movie contains exactly the requested number of frames, at the requested frame rate and picture size, in the correct order, in 100 % of test cases, checked by reading the movie back.
-- **SC-004**: The first and last frames of an animation are pixel-identical to single renders with the start and end parameter values.
+- **SC-004**: The first and last frames of an animation are pixel-identical to single renders with the start and end parameter values (rendered with the movie's common exposure reference, which equals a single render's own reference for inclination and distance sweeps).
 - **SC-005**: Running the same animation twice on the same machine gives identical frames in 100 % of frames.
 - **SC-006**: After an interruption at any frame, rerunning the command renders only the missing frames, and the resulting frame set is identical to an uninterrupted run.
 - **SC-007**: An invalid animation (invalid parameter value in any frame) is rejected in under 2 seconds without rendering any frame.

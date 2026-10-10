@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan:
-specs/002-metal-gpu-backend/plan.md
+specs/003-movie-from-frames/plan.md
 <!-- SPECKIT END -->
