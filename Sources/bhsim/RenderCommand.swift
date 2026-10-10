@@ -21,7 +21,7 @@ struct Render: ParsableCommand {
             <out>.json (all inputs, units, diagnostics).
 
             Exit codes: 0 success; 2 invalid input (including unknown options and unparsable values); 3 output could not be written; 4 render completed but \
-            more than 0.1% of rays were unresolved or exceeded the residual bound.
+            more than 0.1% of rays were unresolved or exceeded the residual bound; 5 the requested backend is unavailable.
             """
     )
 
@@ -44,7 +44,7 @@ struct Render: ParsableCommand {
     @Option(name: .customLong("max-steps"), parsing: .unconditional,
             help: "Integrator step budget per ray; rays needing more are reported as unresolved.")
     var maxSteps: Int = NumericalDefaults.stepBudget
-    @Option(help: "Compute backend: cpu (float64 reference). metal is not available yet.") var backend: BackendChoice = .cpu
+    @Option(help: "Ray-tracing backend: cpu (float64 reference, default) or metal (Apple GPU, float32).") var backend: BackendChoice = .cpu
 
     func run() throws {
         var config = RenderConfig()
@@ -59,21 +59,21 @@ struct Render: ParsableCommand {
         config.exposureStops = exposure
         config.maxStepsPerRay = maxSteps
 
-        guard backend == .cpu else {
-            fail("--backend: the metal backend is not available; use cpu")
-            throw ExitCode(2)
-        }
+        config.backend = backend == .metal ? .metal : .cpu
         let renderer: Renderer
         do {
             renderer = try Renderer(config: config)
         } catch let error as ConfigError {
             fail(error.errorDescription ?? "invalid input")
             throw ExitCode(2)
+        } catch let error as BackendError {
+            fail("--backend: \(error.errorDescription ?? "the requested backend is unavailable")")
+            throw ExitCode(5)
         }
 
         print("Rendering \(width)x\(height) at \(samples) samples/pixel (spin \(spin), i = \(inclination)°, r = \(distance) M)")
         let reporter = ProgressReporter()
-        let image = renderer.render(progress: { reporter.update($0) })
+        let image = try renderer.renderOnBackend(progress: { reporter.update($0) })
         print("")
 
         let paths: RenderOutput.Paths

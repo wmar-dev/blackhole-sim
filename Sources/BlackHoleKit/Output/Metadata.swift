@@ -64,6 +64,7 @@ public struct RenderMetadata: Codable, Sendable {
 
     public var version = BlackHoleKit.version
     public var units = Units()
+    public var backend: BackendInfo
     public var blackHole: BlackHoleInfo
     public var observer: ObserverInfo
     public var disk: DiskInfo
@@ -74,6 +75,7 @@ public struct RenderMetadata: Codable, Sendable {
 
     public init(config: RenderConfig, shading: Shading, referenceRadiance: Double, diagnostics d: Diagnostics) {
         let kerr = config.kerr
+        backend = BackendInfo(backend: config.backend)
         blackHole = BlackHoleInfo(spin: config.blackHole.spin, massSolar: config.blackHole.massSolar,
                                   horizonRadius: kerr.horizonRadius, iscoRadius: kerr.iscoRadius)
         observer = ObserverInfo(distance: config.observer.distance, inclinationDeg: config.observer.inclinationDegrees,

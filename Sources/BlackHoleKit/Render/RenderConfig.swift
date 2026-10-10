@@ -85,6 +85,8 @@ public struct RenderConfig: Sendable, Equatable {
     public var sky = SkyConfig()
     /// When false the disk is omitted entirely (no plane crossings are tested): a bare black hole and sky.
     public var diskEnabled = true
+    /// Which backend traces the rays; the CPU backend is the float64 reference and the default.
+    public var backend = Backend.cpu
     public var width = 1920
     public var height = 1080
     public var samplesPerPixel = 4
