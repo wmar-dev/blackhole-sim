@@ -12,17 +12,25 @@ Interstellar](https://arxiv.org/abs/1502.03808), 2015). This project is an indep
 code. It is much simpler: it traces single rays (the film's renderer, DNGR, propagates ray bundles for
 flicker-free IMAX frames) for a static observer, and produces still images.
 
-![A non-spinning stellar-mass black hole with its accretion disk, seen from 80°](docs/images/default.png)
+![A black hole's dark shadow ringed by a thin bright photon ring, inside a glowing blue-white accretion disk whose far side is lensed over the top; stars near the hole are stretched into arcs. Non-spinning 10 solar-mass hole seen from 80 degrees at 100 M, default settings, 1600 by 900 at 9 samples per pixel.](docs/images/default.png)
 
 The default scene: a non-spinning, 10 M☉ black hole, disk viewed at 80°. The far side of the disk is lensed over
 the top of the shadow, a second image of the disk curls under it, and the thin bright ring at the shadow's edge
 is the photon ring. Stars near the hole are stretched into arcs.
 
-![A spinning (a = 0.9) supermassive black hole with a cool disk](docs/images/spin09-cool-disk.png)
+*Rendered with* `bhsim render --width 1600 --height 900 --samples 9`: every other setting is the default (spin 0,
+mass 10 M☉, observer at r = 100 M and 80° from the spin axis, 30° field of view, disk from the innermost stable orbit to
+20 M at 0.1 of the Eddington luminosity, star-field sky with seed 1, CPU backend).
+
+![A flattened black hole shadow inside a dim accretion disk that is brightest and bluest-white on the left, where the gas approaches the observer, and fades to a dull brown on the right; a second image of the disk curls under the hole, and stars are stretched into arcs. Spin a = 0.9, mass 1e9 solar masses, accretion rate 1e-4 of Eddington, 80 degrees inclination, 1600 by 900 at 9 samples per pixel.](docs/images/spin09-cool-disk.png)
 
 A spinning black hole (a/M = 0.9) with a cool disk (10⁹ M☉, low accretion rate). The shadow is flattened on the
 side where the disk approaches the observer (left), the approaching gas is Doppler-boosted and bluer, and the
 receding side is dimmed and reddened.
+
+*Rendered with* `bhsim render --width 1600 --height 900 --samples 9 --spin 0.9 --inclination 80 --mass 1e9 --accretion-rate 1e-4`:
+the same as the default scene except for the spin, the mass (10⁹ M☉) and a disk luminosity of 10⁻⁴ of the Eddington
+luminosity, which makes the disk cooler (the mass and accretion rate set only the temperature, not the geometry).
 
 ## Requirements
 
@@ -75,11 +83,13 @@ means the image was written but more than 0.1 % of rays were unresolved or out o
 
 ## Movies
 
-![Inclination sweep from 85° to 20° of a non-spinning black hole with its disk (5 s, rendered on the GPU)](docs/images/inclination-sweep.webp)
+![A five-second animation of a non-spinning black hole and its disk as the viewing angle sweeps from nearly edge-on (85 degrees) to nearly face-on (20 degrees); the shadow stays circular while the disk opens up. Default 10 solar-mass scene, 1280 by 720 at 24 fps, 9 samples per pixel, GPU backend.](docs/images/inclination-sweep.webp)
 
-*An inclination sweep from 85° to 20° (`movie animate --sweep inclination --from 85 --to 20 --duration 5 --backend metal`,
-1280×720, 9 samples per pixel). This preview is a reduced animated WebP; the full-quality movie is
-[docs/images/inclination-sweep.mp4](docs/images/inclination-sweep.mp4).*
+*An inclination sweep from 85° to 20° of the default (non-spinning, 10 M☉) black hole, made with*
+`bhsim movie animate --sweep inclination --from 85 --to 20 --duration 5 --fps 24 --width 1280 --height 720 --backend metal`
+*(9 samples per pixel is the `animate` default; everything else as in the default scene). This preview is a reduced
+animated WebP; the full-quality movie is [docs/images/inclination-sweep.mp4](docs/images/inclination-sweep.mp4).
+`tools/make_readme_assets.sh` regenerates all three images and the movie with these settings.*
 
 `bhsim movie animate` renders a movie by sweeping one viewing parameter (`--sweep inclination|distance|spin`,
 `--from`, `--to`) over `--duration` seconds at `--fps`, with every other `render` option held constant. Every frame is a
@@ -136,6 +146,7 @@ Sources/BlackHoleKit/   Spacetime, Geodesic, Camera, Disk, Sky, Radiometry, Rend
 Sources/bhsim/          Command-line tool (render, validate)
 Tests/BlackHoleKitTests Tests and the JSON reference fixtures they compare against
 tools/reference/        Python scripts that generate the fixtures (uv run python tools/reference/<script>.py)
+tools/make_readme_assets.sh  regenerates the images and movie of this README into docs/images/ (stills or movie, or both)
 docs/                   physics.md (equations, approximations), tolerances.md
 specs/001-black-hole-image/   Specification, plan, research, data model, contracts, tasks
 ```
