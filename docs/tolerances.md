@@ -31,3 +31,19 @@ The GPU kernel runs in 32-bit floating point; the CPU float64 backend remains th
 | GPU vs. CPU: disk crossing radius, 99th percentile | < 1e-3 relative | FR-003 | fixed | |
 | GPU vs. CPU: sky direction | ≤ 1e-4 rad for ≥ 99.9 % of sky rays | FR-003 | fixed | |
 | GPU vs. CPU: disk/horizon pixel radiance, 99th percentile | < 1 % (relative to max(reference, 1e-3 × peak)) | FR-003 | fixed | |
+
+## Movies (feature 003)
+
+| Quantity | Tolerance | Source | Status | Justification |
+|----------|-----------|--------|--------|---------------|
+| Decoded movie frame vs its source PNG (PSNR) | ≥ 35 dB at 640×360 and above, standard quality | spec SC-003, research D7 | chosen (T019) | H.264 with 4:2:0 chroma is lossy. Measured worst frame, ffmpeg CRF 18: 38.8 dB at 640×360, 40.7 dB at 1280×720; built-in encoder: 37–42 dB with the bit-rate floors. 35 dB leaves margin for fine star fields; smaller pictures (160×90: 34.2 dB) are below it and should use `--quality high` |
+| Flat saturated colours through the encoder | ≤ 8 levels per channel | research D7 | chosen | Compression noise on flat areas is ≤ 2 levels; a wrong colour matrix or transfer tag gives ≥ 18 levels, so 8 separates them |
+| Mislabelled-matrix movie must fail the colour check | > 12 levels | research D7 | chosen | Shows the colour test can see a tagging error |
+| First/last animation frame vs single render | bit-identical | spec SC-004 | fixed | |
+| Resumed vs uninterrupted animation | bit-identical frames | spec SC-006 | fixed | |
+| ffmpeg movie file, repeated | byte-identical | research D6 | fixed (same machine and ffmpeg version) | |
+| Built-in encoder, repeated | equivalent (≥ 35 dB between runs), not identical | research T019 | documented | The hardware encoder is not deterministic |
+| Frame-to-frame brightness change in a spin sweep | no steps (measured 0.7 % per frame) | research D5 | measured | One exposure reference for the whole movie |
+| 120 frames, 1920×1080 assembled | < 30 s | spec SC-001 | measured 4.6 s (ffmpeg), 2.9 s (built in) | |
+| 120 frames, 1280×720, 4 samples per pixel, GPU, rendered and assembled | < 5 min | spec SC-002 | measured 148 s; 278 s at the default 9 samples per pixel | |
+| Invalid sweep rejected | < 2 s, nothing rendered | spec SC-007 | measured 0.04 s | |

@@ -22,7 +22,7 @@ Encodes a folder of numbered display PNGs into an MP4.
 
 ## `bhsim movie animate`
 
-Renders a frame sequence by sweeping one parameter, then assembles it. Accepts every option of `bhsim render` (except `--out`, which is replaced by the one below) and holds them constant across frames, including `--backend`.
+Renders a frame sequence by sweeping one parameter, then assembles it. Accepts every option of `bhsim render` (except `--out`, which is replaced by the one below) and holds them constant across frames, including `--backend`. One default differs: `--samples` is **9** (not 4), because the fixed sample pattern makes the thin photon ring speckle from frame to frame at low sample counts (research.md, open point 2). Pass `--samples 4` for a faster draft.
 
 | Option | Default | Meaning |
 |--------|---------|---------|

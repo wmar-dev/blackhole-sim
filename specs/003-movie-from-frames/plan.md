@@ -24,7 +24,7 @@ No physics changes. Each frame is a normal render; the new code sequences render
 
 **Project Type**: Library plus command-line tool (extends the existing package)
 
-**Performance Goals**: Assemble 120 frames of 1920×1080 in under 30 s with either encoder (measured spike rates are far higher); a 120-frame 1280×720 animation at 4 samples per pixel on the GPU backend in under 5 minutes (estimate: 1.2 s per frame from the 1080p GPU timing of 2.75 s, so about 2.5 minutes); invalid sweep rejected in under 2 s.
+**Performance Goals**: Assemble 120 frames of 1920×1080 in under 30 s with either encoder (measured spike rates are far higher); a 120-frame 1280×720 animation at 4 samples per pixel on the GPU backend in under 5 minutes (estimate: 1.2 s per frame from the 1080p GPU timing of 2.75 s, so about 2.5 minutes; at the `animate` default of 9 samples per pixel about 5–6 minutes); invalid sweep rejected in under 2 s.
 
 **Constraints**: Memory independent of the number of frames; frames written to disk as rendered; identical frames on repeated runs (and, with ffmpeg, an identical movie file); resumable; CPU and GPU renders of single images unchanged (byte-identical CPU output).
 
@@ -39,7 +39,7 @@ No physics changes. Each frame is a normal render; the new code sequences render
 | I. Accurate Physics | No new physics. Each frame is a complete render by the validated renderer; nothing is interpolated, blurred or synthesised (FR-007). The one approximation added, lossy video compression, is documented with its measured error (research D1, D7); the PNG/EXR frames remain the physical record. The physical scope of an animation (a sequence of static-observer views of a stationary hole) is stated in the docs (FR-015). | PASS |
 | II. Explicit Units and Conventions | Swept parameters keep their existing units (degrees, M, dimensionless spin) and validity ranges. The video's colour encoding is stated explicitly: sRGB transfer function with BT.709 primaries and matrix, limited range, 4:2:0 (research D1). | PASS |
 | III. Validation Against Known Results (Test-First) | Tests are written first: frame order and count read back from the movie, colour fidelity against the source PNGs with a stated PSNR floor, first/last frame equal to single renders, resume equals uninterrupted, determinism. The PSNR floor is justified in research D7, not tuned to pass. | PASS (enforced in tasks) |
-| IV. Numerical Rigor and Reproducibility | Frames are deterministic (existing guarantee); the movie record stores every input and the common exposure reference (D5); with ffmpeg the movie file itself is byte-identical across runs (spike), and with the AVFoundation fallback the decoded frames are identical while the container bytes differ (embedded creation time); this is documented, not hidden. | PASS |
+| IV. Numerical Rigor and Reproducibility | Frames are deterministic (existing guarantee); the movie record stores every input and the common exposure reference (D5); with ffmpeg the movie file itself is byte-identical across runs (spike), and with the AVFoundation fallback the movie is equivalent but not reproducible (the hardware encoder is not deterministic, research.md T019 findings); this is documented, not hidden. | PASS |
 
 **Post-design re-check (after Phase 1)**: PASS. Carried as risks, not violations: the fallback hardware encoder's output may differ between Mac models (R1), and a spin sweep changes the brightness reference (handled by D5).
 

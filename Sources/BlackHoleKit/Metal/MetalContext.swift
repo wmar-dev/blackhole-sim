@@ -51,6 +51,39 @@ public final class MetalContext: @unchecked Sendable {
         return context
     }
 
+    // MARK: Process-wide cache (research D9): an animation renders many frames and must not recompile the kernel each time.
+
+    private static let sharedLock = NSLock()
+    nonisolated(unsafe) private static var shared: MetalContext?
+    nonisolated(unsafe) private static var sharedCreations = 0
+
+    /// The process-wide context, created on first use. A simulated missing GPU is never cached.
+    public static func cached(forceUnavailable: Bool = false) throws -> MetalContext {
+        if forceUnavailable || ProcessInfo.processInfo.environment[forceNoGPUVariable] == "1" {
+            return try make(forceUnavailable: forceUnavailable)
+        }
+        sharedLock.lock()
+        defer { sharedLock.unlock() }
+        if let shared { return shared }
+        let context = try make()
+        shared = context
+        sharedCreations += 1
+        return context
+    }
+
+    /// How many times the shared context has been created since the last reset (tests).
+    public static var sharedCreationCount: Int {
+        sharedLock.lock(); defer { sharedLock.unlock() }
+        return sharedCreations
+    }
+
+    /// Forgets the shared context and the creation count (tests).
+    public static func resetSharedForTesting() {
+        sharedLock.lock(); defer { sharedLock.unlock() }
+        shared = nil
+        sharedCreations = 0
+    }
+
     /// The compute pipeline for the kernel `name`, created on first use.
     public func pipeline(named name: String) throws -> MTLComputePipelineState {
         lock.lock()

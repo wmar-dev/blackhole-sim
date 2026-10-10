@@ -34,3 +34,5 @@
 - Validation pass 1: all items pass. No clarification markers were needed; the two readings of the request (assemble existing frames, or also render the frames) are both covered as P1 and P2.
 - SC-008 names "the default video player of the Mac" as a user-facing compatibility check, not an implementation choice.
 - Constitution check: Principle I is respected by FR-007 (no synthesised frames) and FR-015 (documented physical scope); Principle IV by FR-011 and FR-012 (determinism and recorded inputs).
+
+- 2026-10-10: implementation complete; every success criterion measured (research.md, Final results). No tolerance was loosened; the fidelity floor of 35 dB applies from 640x360 up and is documented in docs/tolerances.md.

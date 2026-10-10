@@ -25,18 +25,17 @@ Repeat with each encoder and compare reproducibility:
 cmp out/a1.mp4 out/a2.mp4 && echo "ffmpeg: identical files"
 .build/release/bhsim movie assemble --frames out/frames --out out/b1.mp4 --encoder avfoundation
 .build/release/bhsim movie assemble --frames out/frames --out out/b2.mp4 --encoder avfoundation
-ffmpeg -v error -i out/b1.mp4 -f framemd5 - | tail -n +5 > out/b1.md5; ffmpeg -v error -i out/b2.mp4 -f framemd5 - | tail -n +5 > out/b2.md5
-cmp out/b1.md5 out/b2.md5 && echo "avfoundation: identical decoded frames"
-PATH=/usr/bin:/bin .build/release/bhsim movie assemble --frames out/frames --out out/c.mp4 --encoder ffmpeg; echo "exit $?"   # ffmpeg hidden: exit 6, no fallback
+cmp -s out/b1.mp4 out/b2.mp4 || echo "avfoundation: file bytes differ (and the decoded frames may differ slightly: hardware encoder)"
+.build/release/bhsim movie assemble --frames out/frames --out out/c.mp4 --encoder ffmpeg --ffmpeg /nonexistent/ffmpeg; echo "exit $?"   # exit 6, no fallback, no file
 ```
 
-Expected: the ffmpeg files are byte-identical, the AVFoundation files decode to identical frames, and the last command exits with 6 (with `auto`, the same command would use AVFoundation).
+Expected: the ffmpeg files are byte-identical; the AVFoundation files are equivalent but not guaranteed identical (research.md, "Reproducibility of the AVFoundation encoder"); the last command exits with 6. (Hiding ffmpeg with `PATH` is not enough, because the search also looks in `/opt/homebrew/bin` and `/usr/local/bin`.)
 
 ## 2. Unpadded numbering and errors
 
 ```bash
-mkdir -p out/odd && cp out/frames/frame_0002.png out/odd/shot_2.png && cp out/frames/frame_0010.png out/odd/shot_10.png
-.build/release/bhsim movie assemble --frames out/odd --out out/odd.mp4   # shot_2 then shot_10
+mkdir -p out/odd && for i in $(seq 2 10); do cp out/frames/frame_$(printf %04d $i).png out/odd/shot_$i.png; done
+.build/release/bhsim movie assemble --frames out/odd --out out/odd.mp4   # shot_2 ... shot_9, then shot_10 (numerical, not alphabetical, order)
 .build/release/bhsim movie assemble --frames out/nothing --out out/x.mp4; echo "exit $?"   # names the folder and pattern, exit 2
 .build/release/bhsim movie assemble --frames out/frames --out out/assembled.mp4; echo "exit $?"   # exists: exit 2 without --force
 ```
@@ -45,15 +44,16 @@ mkdir -p out/odd && cp out/frames/frame_0002.png out/odd/shot_2.png && cp out/fr
 
 ```bash
 .build/release/bhsim movie animate --sweep inclination --from 85 --to 20 --duration 3 --fps 24 \
-    --width 640 --height 360 --samples 4 --backend metal --out out/sweep.mp4
+    --width 640 --height 360 --backend metal --out out/sweep.mp4
 ```
 
 Expected: `frame k/72` progress, 72 frames in `out/sweep_frames/`, a 3 s movie, `out/sweep.mp4.json`. First and last
 frames equal single renders:
 
 ```bash
-.build/release/bhsim render --inclination 85 --width 640 --height 360 --samples 4 --backend metal --out out/first
-cmp out/first.png out/sweep_frames/frame_0001.png && echo identical
+.build/release/bhsim render --inclination 85 --width 640 --height 360 --samples 9 --backend metal --out out/first
+cmp out/first.png out/sweep_frames/frame_0001.png && echo identical   # 9 samples, the animate default
+uv run python tools/reference/check_movie_record.py out/sweep.mp4.json   # the record against its JSON schema
 ```
 
 ## 4. Invalid sweep is rejected before rendering (SC-007)

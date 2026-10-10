@@ -4,7 +4,7 @@
 
 **Created**: 2026-10-10
 
-**Status**: Draft
+**Status**: Implemented (all success criteria measured and met; see research.md, Final results)
 
 **Input**: User description: "Add the ability to generate a movie from individual frames"
 
@@ -117,6 +117,7 @@ A user can see afterwards exactly how a movie was made: which frames and setting
 - The video is built from the display (tone-mapped, 8-bit) images. Building video from the 32-bit physical-radiance images, with a single tone curve applied across the whole movie, is out of scope for this feature.
 - A video-encoding capability must be present on the Mac. Which one is used is a planning decision; the tool reports clearly if none is found.
 - The renderer and its backends, including the GPU backend, already exist and are used unchanged to render each frame; this feature adds sequencing, assembly and recording, not new physics.
+- Every frame uses the same random seed for the sky and the sample pattern, so frames are fully determined by their settings; per-frame variation of the sample pattern is out of scope.
 - Only linear sweeps of one parameter are in scope. Multiple parameters at once, easing curves, camera paths defined by keyframes, and audio are out of scope for this version.
 - The reference machine is an Apple M4; other platforms are out of scope.
 - Sound, subtitles, titles and overlays (such as a parameter read-out on each frame) are out of scope.

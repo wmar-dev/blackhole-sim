@@ -232,6 +232,8 @@ T there is 3.2×10⁴ K rather than the millions of kelvin a little further out.
 | The shift factor is right | Matches a metric-tensor computation to 10⁻¹²; face-on closed form; sign of the Doppler effect | `DiskPhysicsTests` |
 | The colour pipeline is right | Planck → XYZ → sRGB against 1 nm integration of the CIE tables; the g³/g⁴ identities; σ and h, k_B consistency | `PlanckColorTests`, `RadiometryTests` |
 | The GPU backend agrees with the CPU | Five scenes, 960×540 at 4 spp: 100 % same outcome, crossing radius 7×10⁻⁷, radiance 99th percentile ≤ 10⁻⁶ | `bhsim compare`, `MetalAgreementTests` |
+| Movie frames are exactly the single renders | First and last frame of a 120-frame GPU animation are byte-identical to single renders; a resumed run equals an uninterrupted one on all 72 frames | `AnimationRunnerTests`, `MovieDeterminismTests`, quickstart |
+| The movie keeps the colours of the frames | Decoded frames within 35 dB PSNR of their PNGs with Apple's and ffmpeg's decoders; saturated colours within 8 levels; a mislabelled colour matrix is detected | `FFmpegEncoderTests`, `AVFoundationEncoderTests` |
 | The renderer is deterministic | Byte-identical output across runs and thread counts | `DeterminismTests`, quickstart |
 
 The reference computations live in `tools/reference/` and are independent of the Swift code (Python with mpmath and
@@ -248,6 +250,17 @@ Each ray is independent, so output is reproducible and does not depend on band s
 CPU to the tolerances of `docs/tolerances.md` (`bhsim compare` checks this); the CPU backend remains the reference.
 On an M4 it is 5–12× faster (default scene 5–7×, 4K at 16 samples 7.3×).
 
+### Movies
+
+A movie is a sequence of ordinary images. `bhsim movie assemble` turns a folder of numbered PNG frames into an MP4;
+`bhsim movie animate` first renders the frames, sweeping one viewing parameter (inclination, distance or spin) in equal
+steps, and then assembles them. Every frame is a complete render, nothing is interpolated, and all frames share one
+brightness reference so that changes in brightness are physics, not normalisation. Frames are written to disk as they
+are made, so memory does not grow with the length of the movie and an interrupted run continues where it stopped.
+Because the sample pattern is fixed, the thin photon ring speckles from frame to frame at low sample counts, so
+`animate` uses 9 samples per pixel by default. Encoding uses ffmpeg when installed (reproducible files, smaller) and the
+encoder built into macOS otherwise; the record next to the movie says which one and how it was set.
+
 ## 9. Where to be skeptical
 
 - **Static observer.** Not a geodesic observer; the image is what a hovering observer sees. For r_o ≫ M the
@@ -258,6 +271,7 @@ On an M4 it is 5–12× faster (default scene 5–7×, 4K at 16 samples 7.3×).
 - **Gamut and display.** Out-of-gamut colours are clipped; the PNG uses a fixed −1 stop exposure and an ACES-style
   curve. The EXR is the physical record.
 - **GPU precision.** The GPU backend is float32; it is validated against, not equal to, the CPU reference. A few sky rays near the photon sphere differ by more than 10⁻⁴ rad.
+- **Movies.** An animation is a series of static views, not a physical evolution, and the file is lossy video: use the PNG/EXR frames for measurements. Speckle of the photon ring between frames at low sample counts is real sampling noise.
 - **Synthetic sky.** Stars are illustrative, drawn from simple distributions, and receive no shift factor.
 - **Single-sample noise.** At 4 samples per pixel the thin photon ring shows single-pixel speckle; use `--samples 9`
   or more.

@@ -58,7 +58,7 @@ Six 640×360 display PNGs (inclination 80° to 30°) were encoded with a throwaw
 
 ### D6. Determinism of a movie
 
-- **Decision**: The same command gives identical PNG frames (existing guarantee). With the ffmpeg encoder it also gives a **byte-identical movie file** on the same machine and ffmpeg version (spike: bit-exact flags, software encoder). With the AVFoundation fallback the decoded frames are identical but the file bytes are not (the header carries a creation time), and a different Mac model may produce a different bit stream from the hardware encoder; this is documented. Tests assert byte identity for ffmpeg and decoded-frame identity for AVFoundation.
+- **Decision**: The same command gives identical PNG frames (existing guarantee). With the ffmpeg encoder it also gives a **byte-identical movie file** on the same machine and ffmpeg version (spike: bit-exact flags, software encoder). With the AVFoundation fallback the movie is only equivalent, not reproducible: the file bytes differ (creation time) and, as found in T019, even the decoded frames can differ between runs because the hardware encoder is not deterministic (see "Reproducibility of the AVFoundation encoder"); a different Mac model may also produce a different bit stream. This is documented. Tests assert byte identity for ffmpeg and equivalence (same frames, each within the fidelity floor) for AVFoundation.
 - **Rationale**: Honest statement of what each encoder guarantees (Constitution IV).
 - **Alternatives considered**: Forcing a fixed creation time in AVFoundation: not available through the system API.
 
@@ -103,7 +103,76 @@ Six 640×360 display PNGs (inclination 80° to 30°) were encoded with a throwaw
 **Open design points for `tasks.md`:**
 
 1. **Interruption.** Ctrl-C during `animate` must stop the encoder process, remove its temporary output, and leave finished frames (D4). During `assemble` a partial movie must never be left at the final path (write to a temporary name, then rename).
-2. **Fixed sample pattern.** The sample jitter depends on the seed and pixel, not the frame, so every frame has the same noise pattern. This is stable (no flicker) but is a fixed pattern. The thin photon ring at 4 samples per pixel will speckle differently from frame to frame because the geometry moves. Default stays as is; the docs recommend `--samples 9` or more for movies. Decide whether to offer `--vary-seed`.
+2. **Fixed sample pattern (DECIDED: keep).** The sample jitter depends on the seed and pixel, not the frame, so every frame has the same sub-pixel sample offsets. This is stable (stars do not shimmer, the first and last frames equal single renders, and every frame is a pure function of its inputs) but it is a fixed pattern. The thin photon ring at 4 samples per pixel will speckle differently from frame to frame because the geometry moves. Decision (2026-10-10): determinism comes first, so there is **no per-frame seed variation and no `--vary-seed` option**; `animate` defaults to `--samples 9` (a single `render` keeps 4) and the docs recommend 9 or more for movies. Cost: about 2.25× the render time of 4 samples per pixel, so the SC-002 scene (120 frames, 1280×720) takes roughly 5–6 minutes at 9 on the GPU; SC-002 itself is stated at 4 samples per pixel. Rejected: varying `--seed` per frame (it also drives the star field, so stars would jump); a separate per-frame jitter seed (stars shimmer, larger files, SC-004 only for the first frame, a metadata-schema change).
 3. **ffmpeg version drift.** Byte-identical files hold for the same machine and ffmpeg version; the record stores the version (D1).
 4. **Memory of the GPU context per frame.** Each frame builds a renderer; the kernel cache (D9) avoids recompiling, and the band buffers are released between frames. Measure on the 120-frame run.
 5. **Colour of the movie versus the PNG.** 4:2:0 subsampling blurs colour at single-pixel stars (R3); compare a star-field crop by eye once implemented.
+
+## Implementation findings (running log)
+
+- **R4 confirmed and fixed in principle (T008/T009).** A flat-colour test movie written with `AVAssetWriter` and no colour information decoded up to **28 levels** off in a plain reader. Adding the colour properties to the writer settings **and** BT.709/sRGB attachments to every pixel buffer brought every frame within 8 levels. T015 applies the same to the production encoder.
+- **Availability.** `AVVideoTransferFunction_IEC_sRGB` exists only on macOS 15 and later, and the package targets macOS 14. The AVFoundation encoder uses the sRGB transfer tag on macOS 15+ and falls back to the BT.709 transfer tag on macOS 14 (a small contrast difference there, to be documented); the ffmpeg encoder is unaffected.
+- **Frame counting.** Reading compressed samples of an AVFoundation-written file gave 16 samples for 12 frames; the reader therefore counts decoded, displayed frames.
+
+### AVFoundation bit-rate calibration (T015)
+
+The first rule (0.25 bit per pixel per frame, proportional to picture size) gave only 32.8 dB on 160×90 frames, below the 35 dB floor, because small pictures with fine detail need more bits per pixel. Worst-frame PSNR against the source PNGs (Apple's decoder), six renders of the default scene per size:
+
+| Size | 0.5 Mbit/s | 1 | 2 | 4 | 8 | 16 |
+|------|-----------|---|---|---|---|----|
+| 160×90 | 37.1 dB | 37.8 | 38.0 | 38.0 | 38.0 | 38.0 |
+| 640×360 | 34.4 | 37.4 | 38.1 | 39.9 | 41.6 | 42.0 |
+| 1280×720 | 32.7 | 34.0 | 37.8 | 39.2 | 40.0 | 41.7 |
+
+Rule adopted: bit rate = max(floor, bits-per-pixel × pixels × fps) with 0.35 / 0.25 / 0.12 bit per pixel per frame and floors of 2 / 1 / 0.5 Mbit/s for high / standard / small. At 24 fps this gives for `standard` 1.0 Mbit/s at 160×90 (37.8 dB), 1.4 at 640×360 (about 37.7) and 5.5 at 1280×720 (about 39.5); every combination of size and preset reaches at least 35 dB by the table. ffmpeg's CRF 18 gave 39.0 dB on the same kind of frame at a third of the AVFoundation size.
+
+### Reproducibility of the AVFoundation encoder (T019)
+
+D6 assumed that AVFoundation gives identical decoded frames on repeated runs (spike: 6 frames at 640×360, same MD5s). A larger check (48 frames at 640×360, two runs, decoded with ffmpeg) found **different decoded frames from line 12 onward**: the hardware encoder is not deterministic (its rate control can vary between runs). The unit test on 6 small frames had passed by luck. Consequences, applied in the plan, tests and docs:
+
+- AVFoundation output is **equivalent, not reproducible**: same frames in the same order, each within the fidelity floor of its source, but neither file bytes nor decoded pixels are guaranteed to repeat. `reproducibleFile == false` is the record's statement of this.
+- Only the ffmpeg encoder gives reproducible movies (byte-identical files verified on 48 frames); a user who needs reproducible movies should use `--encoder ffmpeg`, and the CLI says so in `--help`.
+- The determinism test (T034) asserts byte identity for ffmpeg and equivalence for AVFoundation.
+- The PNG frames remain exactly reproducible with either encoder; only the compressed video is affected.
+
+### Measurements (T019)
+
+- SC-001: 120 frames of 1920×1080 assembled in **4.6 s with ffmpeg** (3.6 MB) and **2.9 s with AVFoundation** (7.6 MB) against the 30 s target.
+- ffmpeg fidelity by picture size (worst of 6 frames, Apple's decoder): 160×90 34.2 dB (standard), 320×180 36.6, 640×360 38.8, 1280×720 40.7; `small` (CRF 23) gives 31.5 / 34.1 / 36.2 / 38.1 dB, `high` (CRF 16) 35.0 / 37.3 / 39.5 / 41.4 dB. The 35 dB floor therefore holds for all presets at 640×360 and above and for standard/high at 320×180 and above; pictures smaller than that should use `--quality high`.
+- Quickstart steps 1 and 2 run: 48 frames of 640×360 give a 2.0 s, 24 fps, H.264 movie; ffmpeg files byte-identical; unpadded numbers play in numerical order; a missing folder, a gap and an existing output each exit 2 with a message naming the problem.
+
+### Results of Phase 4 (T032)
+
+| Criterion | Target | Measured (Apple M4, release build, Metal backend) |
+|-----------|--------|---------------------------------------------------|
+| SC-002: 120 frames, 1280×720, 4 samples per pixel, rendered and assembled | < 5 min | **148 s** (442 M rays, 0 unresolved, worst residual 3.0×10⁻⁶) |
+| Same at the `animate` default of 9 samples per pixel | (estimate 5–6 min) | **278 s** = 4.6 min (995 M rays, 0 unresolved, worst residual 3.4×10⁻⁶) |
+| SC-004: first and last frame equal single renders | pixel-identical | `cmp` identical for frames 1 and 120 (GPU, 1280×720, 9 samples) |
+| SC-006: resume after interruption | identical to uninterrupted | stopped with SIGINT after 35 of 72 frames; the rerun said "rendered 37, kept 35"; 0 of 72 frames differ from an uninterrupted run |
+| SC-007: invalid sweep rejected | < 2 s, nothing rendered | **0.04 s**, exit 2, no frames written: "frame 48 of 48 (distance = 1.2) is not a valid render: --distance: no static observer exists at r = 1.2 M …" |
+| Spin sweep brightness (D5) | one reference, no steps | 24 frames, one `referenceRadiance` in all frame records; largest frame-to-frame change of mean luma 0.7 % (mean 0.5 %) |
+
+**Memory leak found and fixed (FR-009).** The first 120-frame run had a peak footprint of 9.9 GB. Measuring 30 and 60 frames showed linear growth (2.5 GB and 4.8 GB, about 75 MB per 1280×720 frame): a command-line loop never drains the main thread's autorelease pool, so the Metal buffers of every frame stayed alive. Wrapping each frame's render in `autoreleasepool` made the footprint flat (434 MB at 30 and 60 frames; 454 MB over all 120 frames at 9 samples per pixel). A single render was never affected, which is why feature 002's measurements did not show it.
+
+**Other findings.** The sky is defined directly in reference units, so a reference override rescales the disk but not the star field (the test was corrected to say so); this is the existing convention and is the right behaviour for a fixed backdrop. `animate` checks everything it can before rendering: timing and every frame's settings, an existing output, the requested encoder, and backend availability (exit 5), so a mistake costs no render time.
+
+### Results of Phase 5 (T033–T037)
+
+- The movie record of an animation holds every field of data-model `MovieRecord`; `tools/reference/check_movie_record.py` (the `jsonschema` package, independent of the Swift code) validates real records from `animate` (inclination and spin sweeps) and from `assemble`, and rejects a record with `referenceRadiance` removed and `codec` changed. The Swift tests use their own small JSON-Schema checker against the same schema file.
+- The schema makes the render information (`animation`, `common`, `backend`, `referenceRadiance`, `seed`, `diagnostics`, `frames`) required only for `source: animation`; a plain `assemble` of arbitrary PNGs has only the movie fields, and `assemble` of an `animate` frames folder recovers the render information from the frame records.
+- Determinism (`MovieDeterminismTests`): PNG frames and the record (except wall time) repeat exactly with either encoder; the ffmpeg movie file repeats byte for byte; the AVFoundation movie is equivalent (6 frames, each pair within the 35 dB floor); an interrupted and resumed run equals an uninterrupted one in frames, record and the common settings.
+- Stale-binary lesson: the release binary used for a quickstart check was older than the code; always rebuild before running the quickstart (the Python checker showed `assembled` for an animation, which exposed it).
+
+### Visual check of the encoded frames (T045, risks R3 and R4)
+
+Frame 50 of a 120-frame 1280×720 GPU animation (9 samples per pixel) was compared with the same frame decoded from the movie made by each encoder (3× nearest-neighbour crops, source | ffmpeg CRF 18 | built-in encoder, 1.7 MB and 2.7 MB for the 5 s movie):
+
+- **Photon ring and disk edge**: the thin lensed arc and the bright inner rim are intact in both movies; ffmpeg is slightly softer at the one-pixel scale. No colour shift is visible.
+- **Stars**: the brightest stars keep their shape and colour in both movies. At ffmpeg's standard quality the faintest stars lose contrast or vanish and the colour of single-pixel stars is blurred (the 4:2:0 chroma subsampling, risk R3); the built-in encoder, which spends more bits here, keeps more of them. For star-rich scenes use `--quality high` (CRF 16) with ffmpeg. This is the expected cost of a lossy viewing format; the PNG and EXR frames keep every star.
+
+## Final results (Phase 6)
+
+- Clean copy of the repository (no `.build`, `out`, `.venv`): release build, all of `quickstart.md` steps 1 to 7 run as written. `swift test`: **254 tests in 50 suites pass**; warning-free build; `bhsim validate` 22/22; `bhsim compare` passes all five scenes; CPU renders unchanged (`CPUUnchangedTests` and the existing suites pass after the `RenderOptions` refactor and the optional reference override).
+- Success criteria: SC-001 met (120 frames of 1920×1080 in 4.6 s with ffmpeg, 2.9 s built in; target 30 s). SC-002 met (148 s at 4 samples per pixel, 278 s at the default 9; target 5 min at 4). SC-003 met (frame count, rate, size and order read back from the movie in every encoder test). SC-004 met (first and last frames identical to single renders). SC-005 met for the frames with either encoder and for the whole file with ffmpeg; the built-in encoder is equivalent, not identical (documented). SC-006 met (0 of 72 frames differ after a resumed run). SC-007 met (0.04 s). SC-008: the movies decode correctly with Apple's decoder (the player pipeline of QuickTime) and with ffmpeg; the default player application itself was not opened in this session.
+- Defects found and fixed by measurement during implementation: untagged-colour error of the built-in writer (R4, up to 28 levels); bit-rate floors for small pictures; a thread-pool deadlock when many tests block in the built-in encoder at once (suites serialized, caveat documented in the encoder); a linear memory leak across frames (autorelease pool per frame, 75 MB per 1280×720 frame before the fix); the stale-binary and `PATH`-search quickstart errors.
+- Not covered: HEVC, ProRes, HDR video, multi-parameter sweeps, easing or keyframes, overlays, audio (out of scope by the spec); other Mac models and macOS versions (the sRGB transfer tag needs macOS 15; macOS 14 falls back to the BT.709 tag, a small contrast difference there, untested); a manual check in the QuickTime Player application.
