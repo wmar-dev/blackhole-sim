@@ -5,6 +5,13 @@ spacetime of a Kerr (rotating) black hole, from a static observer to the horizon
 distant sky. The disk's colour and brightness come from the Novikov–Thorne temperature profile with the full
 relativistic frequency shift.
 
+The approach is the one behind the black hole "Gargantua" in the film *Interstellar* (2014), whose images were
+produced by ray tracing in a Kerr spacetime, as described by the film's science team (James, von Tunzelmann,
+Franklin and Thorne, [Gravitational lensing by spinning black holes in astrophysics, and in the movie
+Interstellar](https://arxiv.org/abs/1502.03808), 2015). This project is an independent implementation, not the film's
+code. It is much simpler: it traces single rays (the film's renderer, DNGR, propagates ray bundles for
+flicker-free IMAX frames) for a static observer, and produces still images.
+
 ![A non-spinning stellar-mass black hole with its accretion disk, seen from 80°](docs/images/default.png)
 
 The default scene: a non-spinning, 10 M☉ black hole, disk viewed at 80°. The far side of the disk is lensed over
