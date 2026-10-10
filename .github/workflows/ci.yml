@@ -17,18 +17,19 @@ jobs:
   test:
     name: Build and test (Apple silicon)
     # Apple-silicon hosted runner: the package targets macOS 14+ and the Metal and AVFoundation code paths need macOS.
-    runs-on: macos-latest
+    runs-on: xcode-27
     timeout-minutes: 60
 
     steps:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Select the newest installed Xcode
+      - name: Select Xcode 27.0
+        # The xcode-27 image's default Xcode (build 27A266a, the same build as the local toolchain). The image also
+        # has 27.1 and 27.2 betas installed, so pin the default rather than the newest.
         run: |
-          latest=$(ls -d /Applications/Xcode*.app | sort -V | tail -n 1)
-          echo "Using $latest"
-          sudo xcode-select -s "$latest"
+          sudo xcode-select -s /Applications/Xcode_27.app
+          xcodebuild -version
           swift --version
 
       - name: Install ffmpeg
