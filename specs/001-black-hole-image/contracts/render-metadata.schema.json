@@ -103,6 +103,10 @@
         },
         "model": {
           "const": "Novikov-Thorne"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "false when rendered with --no-disk"
         }
       }
     },
@@ -163,18 +167,13 @@
           "const": "linear sRGB (Rec.709 primaries, D65)"
         },
         "referenceRadiance": {
-          "type": [
-            "number",
-            "null"
-          ],
-          "description": "Radiance (W m^-2 sr^-1) equal to 1.0 in the EXR; null while shading is geometry-only"
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Y-weighted radiance (W m^-2 sr^-1) equal to 1.0 in the EXR: that of the hottest unshifted disk emission"
         },
         "shading": {
-          "enum": [
-            "geometry-only",
-            "physical"
-          ],
-          "description": "geometry-only is the labeled US1 mode with no shift factor"
+          "const": "physical",
+          "description": "Novikov-Thorne temperature with the shift factor g applied"
         }
       }
     },

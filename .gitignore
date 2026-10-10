@@ -1,3 +1,11 @@
 .venv/
 .build/
 out/
+DerivedData/
+.swiftpm/
+*.swiftpm/
+.DS_Store
+*.tmp
+*.swp
+__pycache__/
+*.pyc
