@@ -98,6 +98,7 @@ curve per channel, and the sRGB transfer function. This is presentation only; th
 | At most 3 plane crossings tested | Further higher-order images are thin and dim | See Known limits | Neglect is documented, not hidden |
 | Stars as Gaussian discs | Illustrative sky | Synthetic | Not a catalogue |
 | Out-of-gamut colours clipped | sRGB gamut | Very cool or very hot disks | Affects hue only at gamut edges |
+| GPU backend: float32 integration | Apple GPUs have no 64-bit floats; step control tightened (radial 10⁻⁵, angular 10⁻⁶); rays passing within sin²θ < 0.02 of a pole re-traced in float64 on the CPU | Same physics, lower arithmetic precision | Measured vs the CPU: 100 % same outcome, crossing radius 99th percentile 7×10⁻⁷, sky direction within 10⁻⁴ rad for ≥ 99.9 % of sky rays, radiance 99th percentile ≤ 10⁻⁴ (see below) |
 | Unresolved rays excluded from averaging | Counted, never coloured | < 0.1 % of rays in tests | Reported in diagnostics; exit code 4 above 0.1 % |
 
 ## Known limits
@@ -106,8 +107,35 @@ curve per channel, and the sRGB transfer function. This is presentation only; th
   images within that cap, and is slightly under-resolved compared with the full infinite series.
 - The disk is a thin, opaque, equatorial sheet: no thickness, corona, jets, polarization or radiative transfer.
 - Output is a single still image for a static observer; observer motion is not modeled.
-- The reference implementation is float64 on the CPU; there is no GPU path (it was not needed: the default
-  1080p image takes about 22 s on an Apple M4).
+- The reference implementation is float64 on the CPU. An optional GPU backend (below) is validated against it.
+
+## GPU backend precision (`--backend metal`)
+
+**What runs where.** The GPU traces each ray with the same equations and integrator as the CPU (Mino time, u = 1/r,
+Dormand–Prince 5(4)) but in **32-bit floating point**, because Apple GPUs provide no 64-bit arithmetic, and reports the
+outcome (captured, disk hit with crossing radius and index, or sky with the final state). The CPU builds the camera rays,
+computes the asymptotic sky direction, shading, averaging and output in float64. The render metadata records
+`backend: metal / float32`.
+
+**Why float32 needs care.** A ray's final direction is set by accumulated angles; a relative state error of ε in the
+angular components turns into an error of order ε × (number of steps) in the direction. With the CPU's tolerance of 10⁻⁹
+that is negligible; float32 resolves only ≈ 6×10⁻⁸. Two measures keep the result at CPU quality:
+
+1. **Tighter angular step control.** The angular state (μ, dμ/dλ, φ) uses a relative tolerance of 10⁻⁶ (radial 10⁻⁵).
+   Loosening it to 10⁻⁵ gave sky-direction errors up to 0.03 rad for 3–5 % of rays; the same errors appear in float64
+   at that tolerance, so this is a step-control property, not an arithmetic limit.
+2. **Polar rays re-traced on the CPU.** The azimuth rate φ′ contains L/(1 − μ²), which is ill-conditioned for a path
+   passing near a pole; float32 hits a conditioning floor there. The kernel flags any ray whose path comes within
+   sin²θ < 0.02 of an axis and the host re-traces it in float64 (≈ 3–4 % of rays in the standard scenes). Rays the GPU
+   did not finish (step budget, step collapse) are also re-traced, so unresolved rays are decided by the reference code.
+   Remedies tried and rejected by measurement: integrating w = 1 − μ² as the state variable and a polar step limiter.
+
+**Measured agreement** (`bhsim compare`, five scenes, 960×540 at 4 samples per pixel, Apple M4; research.md §Agreement):
+outcome match 100 %; crossing radius, 99th percentile 3×10⁻⁷ – 7×10⁻⁷ (limit 10⁻³); sky direction within 10⁻⁴ rad for
+99.93–100 % of sky rays (limit 99.9 %; the few outliers, up to 10⁻² rad, graze the photon sphere); pixel radiance of
+disk/horizon pixels, 99th percentile ≤ 10⁻⁶ relative, maximum 0.13 % (limit 1 %). Star pixels are judged by the
+direction criterion, since a star's brightness changes steeply with direction. Results are deterministic on one
+machine; different GPU models may differ in the last digits.
 
 ## References
 

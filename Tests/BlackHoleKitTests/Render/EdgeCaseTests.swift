@@ -131,8 +131,6 @@ import Testing
             #expect(r.status == 2, "\(c.args): exit \(r.status), stderr: \(r.stderr)")
             #expect(r.stderr.contains(c.mention), "\(c.args): \(r.stderr)")
         }
-        let metal = try run(["render", "--backend", "metal", "--width", "16", "--height", "9"])
-        #expect(metal.status == 2 && metal.stderr.contains("--backend"))
     }
 
     @Test(.enabled(if: EdgeCaseTests.bhsim != nil)) func cliFailsWithExitCodeThreeWhenOutputCannotBeWritten() throws {

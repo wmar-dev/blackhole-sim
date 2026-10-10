@@ -5,6 +5,7 @@
   "required": [
     "version",
     "units",
+    "backend",
     "blackHole",
     "observer",
     "disk",
@@ -34,6 +35,27 @@
         },
         "coordinates": {
           "const": "Boyer-Lindquist"
+        }
+      }
+    },
+    "backend": {
+      "type": "object",
+      "required": [
+        "name",
+        "precision"
+      ],
+      "properties": {
+        "name": {
+          "enum": [
+            "cpu",
+            "metal"
+          ]
+        },
+        "precision": {
+          "enum": [
+            "float64",
+            "float32"
+          ]
         }
       }
     },

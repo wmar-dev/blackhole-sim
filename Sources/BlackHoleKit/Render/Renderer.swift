@@ -14,8 +14,12 @@ public struct RenderedImage: Sendable {
     public var unresolvedFraction: [Float]
     public var diagnostics: Diagnostics
     public var shading: Shading
+    /// The backend that traced the rays.
+    public var backend: Backend
     /// Y-weighted radiance (W m⁻² sr⁻¹) equal to 1.0 in `hdr`: that of the hottest unshifted disk emission.
     public var referenceRadiance: Double
+    /// GPU work statistics; nil for the CPU backend.
+    public var gpuStatistics: GPUStatistics? = nil
 }
 
 /// Renders an image by backward ray tracing: every pixel sample is a null geodesic from the static observer
@@ -23,9 +27,13 @@ public struct RenderedImage: Sendable {
 public struct Renderer: Sendable {
     public let config: RenderConfig
     public let sky: any SkyModel
-    private let camera: Camera
-    private let tracer: RayTracer
-    private let disk: NovikovThorne
+    let camera: Camera
+    let tracer: RayTracer
+    let disk: NovikovThorne
+    /// The GPU ray tracer (`config.backend == .metal`), nil for the CPU backend.
+    let gpu: MetalRayTracer?
+    /// Samples per GPU band (clamped to `NumericalDefaults.gpuMaxBufferBytes`).
+    let gpuBandSamples: Int
     /// Y-weighted radiance of the hottest unshifted disk emission: 1.0 in the HDR output.
     public let referenceRadiance: Double
 
@@ -40,8 +48,18 @@ public struct Renderer: Sendable {
     /// - Parameters:
     ///   - sky: overrides the sky built from `config.sky` (used by tests).
     ///   - integratorSettings: overrides the default integrator settings (used by tests, e.g. a tiny step budget).
-    public init(config: RenderConfig, sky: (any SkyModel)? = nil, integratorSettings: IntegratorSettings? = nil) throws {
+    ///   - forceGPUUnavailable: test hook that simulates a missing GPU for `backend == .metal`.
+    ///   - gpuBandSamples: samples per GPU band (tests vary it to show that the image does not depend on it).
+    public init(config: RenderConfig, sky: (any SkyModel)? = nil, integratorSettings: IntegratorSettings? = nil,
+                forceGPUUnavailable: Bool = false, gpuBandSamples: Int = NumericalDefaults.gpuBandSamples) throws {
+        self.gpuBandSamples = min(max(gpuBandSamples, 1), NumericalDefaults.gpuMaxBufferBytes / NumericalDefaults.gpuBytesPerSample)
         try config.validate()
+        if config.backend == .metal {
+            // No silent fallback to the CPU (FR-008): an unavailable GPU is an error.
+            gpu = MetalRayTracer(context: try MetalContext.make(forceUnavailable: forceGPUUnavailable))
+        } else {
+            gpu = nil
+        }
         self.config = config
         self.sky = sky ?? Sky.make(config.sky)
         camera = Camera(kerr: config.kerr, observer: config.observer, width: config.width, height: config.height)
@@ -60,7 +78,12 @@ public struct Renderer: Sendable {
 
     /// Radiance carried by a traced ray, or nil if the ray is unresolved.
     func radiance(of result: RayTracer.Result, ray: CameraRay) -> SIMD3<Double>? {
-        switch result.outcome {
+        radiance(of: result.outcome, ray: ray)
+    }
+
+    /// Radiance carried by a ray with the given outcome, or nil if the ray is unresolved.
+    func radiance(of outcome: RayOutcome, ray: CameraRay) -> SIMD3<Double>? {
+        switch outcome {
         case .captured: return .zero
         case .disk(let radius, _, _):
             // The observed spectrum is exactly a blackbody at g·T (I_ν/ν³ is invariant along the ray).
@@ -73,7 +96,14 @@ public struct Renderer: Sendable {
         }
     }
 
+    /// Renders on the configured backend. GPU failures (a command error, memory exhaustion) are thrown.
+    public func renderOnBackend(maxConcurrency: Int? = nil, progress: (@Sendable (Double) -> Void)? = nil) throws -> RenderedImage {
+        gpu == nil ? render(maxConcurrency: maxConcurrency, progress: progress) : try renderGPU(progress: progress)
+    }
+
+    /// Renders on the CPU (the reference backend). Use `renderOnBackend` for a renderer configured with the GPU.
     public func render(maxConcurrency: Int? = nil, progress: (@Sendable (Double) -> Void)? = nil) -> RenderedImage {
+        precondition(gpu == nil, "this renderer uses the GPU backend: call renderOnBackend")
         let start = ContinuousClock.now
         let samplesPerAxis = Int(Double(config.samplesPerPixel).squareRoot().rounded())
         let seed = config.sky.seed
@@ -115,6 +145,6 @@ public struct Renderer: Sendable {
                              capturedFraction: output.pixels.map(\.captured),
                              higherOrderFraction: output.pixels.map(\.higherOrder),
                              unresolvedFraction: output.pixels.map(\.unresolved),
-                             diagnostics: diagnostics, shading: .physical, referenceRadiance: referenceRadiance)
+                             diagnostics: diagnostics, shading: .physical, backend: .cpu, referenceRadiance: referenceRadiance)
     }
 }

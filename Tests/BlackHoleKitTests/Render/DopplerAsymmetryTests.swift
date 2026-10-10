@@ -113,7 +113,7 @@ import Testing
         let config = Self.coolDiskConfig(width: 32, height: 18)
         let image = try Renderer(config: config).render()
         #expect(image.shading == .physical)
-        let reference = try #require(image.referenceRadiance)
+        let reference = image.referenceRadiance
         #expect(reference > 0 && reference.isFinite)
         let nt = NovikovThorne(kerr: config.kerr, massSolar: config.blackHole.massSolar, eddingtonFraction: config.disk.accretionRateEddington)
         #expect(approxEqual(reference, nt.referenceLuminance(upTo: config.disk.outerRadius), relative: 1e-12))

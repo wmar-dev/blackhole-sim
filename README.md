@@ -36,6 +36,8 @@ swift build -c release
 .build/release/bhsim render --out out/default      # 1920×1080, 4 samples per pixel: about 22 s on an Apple M4
 .build/release/bhsim validate                      # physics checks against independent reference values
 swift test                                         # the full test suite
+.build/release/bhsim render --backend metal --out out/gpu   # same image on the GPU: 5–7× faster on an M4
+.build/release/bhsim compare                       # CPU vs GPU agreement on five scenes (about 40 s)
 ```
 
 `render` writes three files next to the chosen basename:
@@ -62,9 +64,11 @@ Common options (all have defaults; `bhsim render --help` lists them):
 | `--disk-outer <r>`, `--no-disk` | 20, off | Outer disk radius; omit the disk entirely |
 | `--sky <starfield\|grid>`, `--seed <n>` | starfield, 1 | Background and its seed |
 | `--exposure <stops>` | 0 | Display exposure for the PNG only |
+| `--backend <cpu\|metal>` | cpu | `metal` traces rays on the Apple GPU in float32 (validated against the CPU reference by `bhsim compare`) |
 
 Invalid input is rejected with a message naming the option and its valid range (exit code 2). Exit code 4
-means the image was written but more than 0.1 % of rays were unresolved or out of tolerance. See
+means the image was written but more than 0.1 % of rays were unresolved or out of tolerance. Exit code 5 means
+`--backend metal` was requested but no usable GPU exists (there is no silent fallback to the CPU). See
 [the CLI contract](specs/001-black-hole-image/contracts/cli.md).
 
 ## How accurate is it?

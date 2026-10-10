@@ -26,4 +26,26 @@ public enum NumericalDefaults {
     public static let residualTolerance = 1e-3
     /// Fraction of rays allowed to exceed `residualTolerance` or be unresolved (SC-003 / exit code 4).
     public static let allowedBadRayFraction = 1e-3
+
+    // MARK: GPU backend (float32; provisional values, chosen by the tolerance sweep, tasks T013 and T022)
+
+    /// Dormand–Prince error-control tolerances of the GPU kernel. Float32 cannot meet the CPU's 10⁻⁹.
+    public static let gpuRelativeTolerance = 1e-5
+    public static let gpuAbsoluteTolerance = 1e-8
+    /// Relative tolerance of the angular state components (μ, dμ/dλ′, φ), which alone fix a ray's final direction.
+    public static let gpuAngleTolerance = 1e-6
+    /// A ray whose path comes closer to a pole than sin²θ = this is flagged delicate and re-traced on the CPU in
+    /// float64 (float32 cannot follow φ accurately past a pole; research.md D2, mitigation M3).
+    public static let gpuPolarFlagSin2 = 0.02
+    /// Accepted steps a ray advances per GPU command (bounds each command's duration; research.md D3).
+    public static let gpuStepsPerPass = 1024
+    /// Samples traced per GPU band: bounds GPU and host memory regardless of image size (FR-009; research.md D4).
+    public static let gpuBandSamples = 1_000_000
+    /// Bytes of GPU memory per sample held by a band (ray input 32 + state 64 + result 48; contracts/gpu-buffers.md).
+    public static let gpuBytesPerSample = 144
+    /// Hard bound on the GPU buffer bytes of one band, whatever the requested band size (FR-009).
+    public static let gpuMaxBufferBytes = 160_000_000
+    /// A single GPU command must stay well below the operating system's watchdog; the measured longest pass is
+    /// checked against this bound by the stress test (FR-009).
+    public static let gpuMaxPassSeconds = 0.2
 }

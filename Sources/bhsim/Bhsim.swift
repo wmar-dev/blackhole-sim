@@ -8,7 +8,7 @@ struct Bhsim: ParsableCommand {
         commandName: "bhsim",
         abstract: "Physically accurate images of a Kerr black hole by backward null-geodesic tracing.",
         version: BlackHoleKit.version,
-        subcommands: [Render.self, Validate.self]
+        subcommands: [Render.self, Validate.self, Compare.self]
     )
 
     /// Runs the command like the default `main`, except that command-line usage errors (unknown option,
