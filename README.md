@@ -75,6 +75,12 @@ means the image was written but more than 0.1 % of rays were unresolved or out o
 
 ## Movies
 
+![Inclination sweep from 85° to 20° of a non-spinning black hole with its disk (5 s, rendered on the GPU)](docs/images/inclination-sweep.webp)
+
+*An inclination sweep from 85° to 20° (`movie animate --sweep inclination --from 85 --to 20 --duration 5 --backend metal`,
+1280×720, 9 samples per pixel). This preview is a reduced animated WebP; the full-quality movie is
+[docs/images/inclination-sweep.mp4](docs/images/inclination-sweep.mp4).*
+
 `bhsim movie animate` renders a movie by sweeping one viewing parameter (`--sweep inclination|distance|spin`,
 `--from`, `--to`) over `--duration` seconds at `--fps`, with every other `render` option held constant. Every frame is a
 complete render, nothing is interpolated, all frames share one brightness reference, and the frames are written to
