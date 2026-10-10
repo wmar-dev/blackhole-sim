@@ -115,3 +115,7 @@ validation against known results, numerical rigor) are in `.specify/memory/const
 ## Related video
 
 - Veritasium, [How to Understand What Black Holes Look Like](https://www.youtube.com/watch?v=zUyH3XhpLTo) (YouTube)
+
+## License
+
+MIT, see [LICENSE](LICENSE).
