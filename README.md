@@ -88,6 +88,8 @@ Not modeled: disk thickness, jets, polarization, radiative transfer, observer mo
 real sky surveys. A hot (stellar-mass) disk looks nearly uniform blue-white in the visible band because it is in
 the Rayleigh–Jeans tail; use `--mass 1e9 --accretion-rate 1e-4` for a disk whose colour varies visibly. Every
 approximation, with its validity and error, is listed in [docs/physics.md](docs/physics.md).
+For a physicist's walk-through of the method, from Kerr geodesics to the colour of a pixel, with a worked
+example ray, see [docs/how-it-works.md](docs/how-it-works.md).
 
 ## Project layout
 
@@ -102,3 +104,7 @@ specs/001-black-hole-image/   Specification, plan, research, data model, contrac
 
 The design process is recorded under `specs/`; the project principles (accurate physics, explicit units,
 validation against known results, numerical rigor) are in `.specify/memory/constitution.md`.
+
+## Related video
+
+- Veritasium, [How to Understand What Black Holes Look Like](https://www.youtube.com/watch?v=zUyH3XhpLTo) (YouTube)

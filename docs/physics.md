@@ -1,6 +1,7 @@
 # Physics reference
 
-What the renderer computes, in what units, with which equations, and where it approximates. Derivations and
+What the renderer computes, in what units, with which equations, and where it approximates. A narrative
+explanation with a worked example is in [how-it-works.md](how-it-works.md). Derivations and
 design decisions are in [specs/001-black-hole-image/research.md](../specs/001-black-hole-image/research.md);
 numeric tolerances in [tolerances.md](tolerances.md).
 
