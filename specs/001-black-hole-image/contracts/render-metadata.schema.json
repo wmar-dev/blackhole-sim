@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "bhsim render metadata",
+  "type": "object",
+  "required": [
+    "version",
+    "units",
+    "blackHole",
+    "observer",
+    "disk",
+    "sky",
+    "image",
+    "hdr",
+    "diagnostics"
+  ],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "bhsim version"
+    },
+    "units": {
+      "type": "object",
+      "required": [
+        "system",
+        "metric",
+        "coordinates"
+      ],
+      "properties": {
+        "system": {
+          "const": "geometrized G=c=M=1"
+        },
+        "metric": {
+          "const": "Kerr, signature (-,+,+,+)"
+        },
+        "coordinates": {
+          "const": "Boyer-Lindquist"
+        }
+      }
+    },
+    "blackHole": {
+      "type": "object",
+      "required": [
+        "spin",
+        "massSolar",
+        "horizonRadius",
+        "iscoRadius"
+      ],
+      "properties": {
+        "spin": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMaximum": 1
+        },
+        "massSolar": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "horizonRadius": {
+          "type": "number"
+        },
+        "iscoRadius": {
+          "type": "number"
+        }
+      }
+    },
+    "observer": {
+      "type": "object",
+      "required": [
+        "distance",
+        "inclinationDeg",
+        "fovDeg"
+      ],
+      "properties": {
+        "distance": {
+          "type": "number"
+        },
+        "inclinationDeg": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 180
+        },
+        "fovDeg": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "exclusiveMaximum": 180
+        }
+      }
+    },
+    "disk": {
+      "type": "object",
+      "required": [
+        "outerRadius",
+        "accretionRateEddington",
+        "model"
+      ],
+      "properties": {
+        "outerRadius": {
+          "type": "number"
+        },
+        "accretionRateEddington": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "model": {
+          "const": "Novikov-Thorne"
+        }
+      }
+    },
+    "sky": {
+      "type": "object",
+      "required": [
+        "kind",
+        "seed"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "starfield",
+            "grid"
+          ]
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "image": {
+      "type": "object",
+      "required": [
+        "width",
+        "height",
+        "samplesPerPixel",
+        "maxPlaneCrossings"
+      ],
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "samplesPerPixel": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxPlaneCrossings": {
+          "const": 3
+        }
+      }
+    },
+    "hdr": {
+      "type": "object",
+      "required": [
+        "colorSpace",
+        "referenceRadiance",
+        "shading"
+      ],
+      "properties": {
+        "colorSpace": {
+          "const": "linear sRGB (Rec.709 primaries, D65)"
+        },
+        "referenceRadiance": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Radiance (W m^-2 sr^-1) equal to 1.0 in the EXR; null while shading is geometry-only"
+        },
+        "shading": {
+          "enum": [
+            "geometry-only",
+            "physical"
+          ],
+          "description": "geometry-only is the labeled US1 mode with no shift factor"
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "object",
+      "required": [
+        "raysTotal",
+        "captured",
+        "disk",
+        "sky",
+        "unresolved",
+        "maxResidual",
+        "p999Residual",
+        "raysOverTolerance",
+        "wallTimeSeconds"
+      ],
+      "properties": {
+        "raysTotal": {
+          "type": "integer"
+        },
+        "captured": {
+          "type": "integer"
+        },
+        "disk": {
+          "type": "integer"
+        },
+        "sky": {
+          "type": "integer"
+        },
+        "unresolved": {
+          "type": "integer"
+        },
+        "maxResidual": {
+          "type": "number"
+        },
+        "p999Residual": {
+          "type": "number"
+        },
+        "raysOverTolerance": {
+          "type": "integer"
+        },
+        "wallTimeSeconds": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}
