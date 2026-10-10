@@ -231,10 +231,22 @@ T there is 3.2×10⁴ K rather than the millions of kelvin a little further out.
 | The disk flux is right | Closed form vs conservation integral to 10⁻²⁵; Swift vs reference to 10⁻¹⁴ | `DiskPhysicsTests`, `tools/reference/novikov_thorne.py` |
 | The shift factor is right | Matches a metric-tensor computation to 10⁻¹²; face-on closed form; sign of the Doppler effect | `DiskPhysicsTests` |
 | The colour pipeline is right | Planck → XYZ → sRGB against 1 nm integration of the CIE tables; the g³/g⁴ identities; σ and h, k_B consistency | `PlanckColorTests`, `RadiometryTests` |
+| The GPU backend agrees with the CPU | Five scenes, 960×540 at 4 spp: 100 % same outcome, crossing radius 7×10⁻⁷, radiance 99th percentile ≤ 10⁻⁶ | `bhsim compare`, `MetalAgreementTests` |
 | The renderer is deterministic | Byte-identical output across runs and thread counts | `DeterminismTests`, quickstart |
 
 The reference computations live in `tools/reference/` and are independent of the Swift code (Python with mpmath and
 SciPy), so the renderer is never checked against itself. `bhsim validate` runs a compact version of this table.
+
+### The GPU backend
+
+`--backend metal` moves the expensive part, following each ray, to the GPU; everything else stays on the CPU in
+float64. Rays are processed in **bands** of about a million samples (bounded memory). Per band the CPU builds the camera
+rays, the GPU kernel traces them in float32 in **passes** of at most 1024 integrator steps per ray (so no single GPU
+command runs long enough for the OS to cut it off; the longest measured pass is 60 ms), then the CPU re-traces the few
+rays the GPU flagged (paths near the poles, where float32 loses accuracy) and shades and averages exactly as before.
+Each ray is independent, so output is reproducible and does not depend on band size. What to trust: it agrees with the
+CPU to the tolerances of `docs/tolerances.md` (`bhsim compare` checks this); the CPU backend remains the reference.
+On an M4 it is 5–12× faster (default scene 5–7×, 4K at 16 samples 7.3×).
 
 ## 9. Where to be skeptical
 
@@ -245,6 +257,7 @@ SciPy), so the renderer is never checked against itself. `bhsim validate` runs a
 - **Three crossings.** Images with n ≥ 4 are dropped, so the photon ring is under-resolved.
 - **Gamut and display.** Out-of-gamut colours are clipped; the PNG uses a fixed −1 stop exposure and an ACES-style
   curve. The EXR is the physical record.
+- **GPU precision.** The GPU backend is float32; it is validated against, not equal to, the CPU reference. A few sky rays near the photon sphere differ by more than 10⁻⁴ rad.
 - **Synthetic sky.** Stars are illustrative, drawn from simple distributions, and receive no shift factor.
 - **Single-sample noise.** At 4 samples per pixel the thin photon ring shows single-pixel speckle; use `--samples 9`
   or more.

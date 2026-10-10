@@ -136,11 +136,11 @@ Swift package at the repository root, as in feature 001: `Sources/BlackHoleKit/<
 
 ## Phase 6: Polish & Cross-Cutting Concerns
 
-- [ ] T034 [P] Update `docs/physics.md`: the GPU backend, float32 integration (why: no 64-bit floats on the GPU), the mitigations used, the measured agreement, the row in the approximations table, and the note that results may differ in the last digits between GPU models (FR-011)
-- [ ] T035 [P] Update `docs/how-it-works.md`: a section on the GPU backend (what runs where, passes, bands, precision, what to trust) and the new rows in the evidence table
-- [ ] T036 [P] Update `docs/tolerances.md` with the final GPU tolerances and the evidence behind them (from T022, T029, T033); any loosening relative to the spec's targets carries a written physical justification
-- [ ] T037 [P] Update `README.md`: the `--backend` option, the measured speed-up, exit code 5 and the `compare` command
-- [ ] T038 [P] Merge the changes of `contracts/cli.md` into `specs/001-black-hole-image/contracts/cli.md` (backend values, `compare`, exit code 5) so the main contract is current
+- [X] T034 [P] Update `docs/physics.md`: the GPU backend, float32 integration (why: no 64-bit floats on the GPU), the mitigations used, the measured agreement, the row in the approximations table, and the note that results may differ in the last digits between GPU models (FR-011)
+- [X] T035 [P] Update `docs/how-it-works.md`: a section on the GPU backend (what runs where, passes, bands, precision, what to trust) and the new rows in the evidence table
+- [X] T036 [P] Update `docs/tolerances.md` with the final GPU tolerances and the evidence behind them (from T022, T029, T033); any loosening relative to the spec's targets carries a written physical justification
+- [X] T037 [P] Update `README.md`: the `--backend` option, the measured speed-up, exit code 5 and the `compare` command
+- [X] T038 [P] Merge the changes of `contracts/cli.md` into `specs/001-black-hole-image/contracts/cli.md` (backend values, `compare`, exit code 5) so the main contract is current
 - [ ] T039 Run the whole of `quickstart.md` end to end on a clean copy of the repository and fix any discrepancy between the document and the actual behavior
 - [ ] T040 Run the full test suite (`swift test`), `bhsim validate` and `bhsim compare`; confirm the CPU renders are unchanged (T003), there are no build warnings, and record the final results in `research.md` §Results
 - [ ] T041 Apply the agreement gate: confirm every tolerance of the spec is met, or that every loosening is justified in writing in `docs/tolerances.md`; set the status of `spec.md` and add the outcome to `checklists/requirements.md` §Notes

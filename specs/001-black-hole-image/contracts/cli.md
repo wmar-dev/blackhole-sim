@@ -23,19 +23,23 @@ Render an image. With no options it renders the default scene.
 | `--exposure <ev>` | 0 | Display exposure offset in stops (PNG only) |
 | `--max-steps <n>` | 100000 | Integrator step budget per ray; rays needing more are counted as unresolved (diagnostic knob) |
 | `--out <basename>` | `blackhole` | Output basename |
-| `--backend <cpu\|metal>` | cpu | `metal` is available only once the GPU backend passes its agreement tests |
+| `--backend <cpu\|metal>` | cpu | `cpu` is the float64 reference; `metal` traces rays on the Apple GPU in float32 (feature 002). Metadata records the backend and precision. If no usable GPU exists: `error: --backend: ...`, exit 5, no files written, no CPU fallback |
 
 **Outputs**: `<basename>.png` (tone-mapped sRGB, 8-bit), `<basename>.exr` (32-bit float linear), `<basename>.json` (metadata, validated by [render-metadata.schema.json](render-metadata.schema.json)).
 
 **stdout**: progress (percent complete) and a final diagnostics summary. **stderr**: errors and warnings.
 
-**Exit codes**: 0 success; 2 invalid input, including unknown options and unparsable values (the message names the offending option and the valid range); 3 output could not be written; 4 render completed but more than 0.1% of rays exceeded the first-integral bound or ended unresolved (images are still written).
+**Exit codes**: 0 success; 2 invalid input, including unknown options and unparsable values (the message names the offending option and the valid range); 3 output could not be written; 4 render completed but more than 0.1% of rays exceeded the first-integral bound or ended unresolved (images are still written); 5 the requested backend (`metal`) is unavailable.
 
 **Input rejection (clear messages)**: a ≥ 1 or a < 0; non-positive mass, size, samples or FoV; non-square sample count; observer at or inside the ergosphere (static observer does not exist), including inside the horizon; inclination exactly 0° or 180° (use a value such as 0.01° instead); `r_out` ≤ r_isco.
 
 ### `bhsim validate`
 
 Runs the built-in physics checks (the analytic subset of the test suite) and prints a pass/fail table with measured values and tolerances. Exit 0 if all pass, 1 otherwise.
+
+### `bhsim compare [--quick]`
+
+Renders five standard scenes (960×540 at 4 samples per pixel; `--quick`: 240×135) with both backends and reports, per scene, ray-outcome match, crossing-radius and sky-direction differences, radiance differences, shadow agreement, GPU residual statistics, times and speed-up, each with PASS/FAIL against the tolerances in `docs/tolerances.md`. Exit 0 if every scene passes, 1 otherwise (the scene and quantity are named), 5 if the GPU is unavailable. Takes about 40 s on an Apple M4.
 
 ## Determinism
 
