@@ -101,14 +101,14 @@ Swift package at the repository root, as in feature 001: `Sources/BlackHoleKit/<
 
 ### Tests for User Story 2 (write first, confirm failing)
 
-- [ ] T025 [P] [US2] Write `Tests/BlackHoleKitTests/Metal/BackendAgreementTests.swift`: the pure comparison function computes the outcome-match fraction, the crossing-radius and radiance difference percentiles and the verdicts correctly on synthetic inputs; a comparison with injected disagreement fails and names the scene and the quantity; the report holds the columns of `contracts/cli.md`; the overall verdict is pass only if every scene passes; a real run of the quick scene set passes on a machine with a GPU
-- [ ] T026 [P] [US2] Write `Tests/BlackHoleKitTests/Metal/CompareCommandTests.swift`: `bhsim compare --quick` exits 0 and prints a PASS row per scene and an overall line; with `BHSIM_FORCE_NO_GPU=1` it exits 5; an unknown option exits 2
+- [X] T025 [P] [US2] Write `Tests/BlackHoleKitTests/Metal/BackendAgreementTests.swift`: the pure comparison function computes the outcome-match fraction, the crossing-radius and radiance difference percentiles and the verdicts correctly on synthetic inputs; a comparison with injected disagreement fails and names the scene and the quantity; the report holds the columns of `contracts/cli.md`; the overall verdict is pass only if every scene passes; a real run of the quick scene set passes on a machine with a GPU
+- [X] T026 [P] [US2] Write `Tests/BlackHoleKitTests/Metal/CompareCommandTests.swift`: `bhsim compare --quick` exits 0 and prints a PASS row per scene and an overall line; with `BHSIM_FORCE_NO_GPU=1` it exits 5; an unknown option exits 2
 
 ### Implementation for User Story 2
 
-- [ ] T027 [US2] Implement `Sources/BlackHoleKit/Validation/BackendAgreement.swift`: the standard scenes (default; spin 0.9 at 85°; spin 0.998 at 60°; bare black hole with grid sky at 90°; cool disk), each 960×540 at 4 samples per pixel in the full set (SC-007) and 240×135 in the quick set, the pure comparison function, the metrics of data-model.md `SceneAgreement`, the tolerances from `docs/tolerances.md`, and the `AgreementReport`
-- [ ] T028 [US2] Implement `Sources/bhsim/CompareCommand.swift` (`bhsim compare [--quick]`, table output, exit codes 0, 1 and 5) and register it in `Sources/bhsim/Bhsim.swift`
-- [ ] T029 [US2] Run `bhsim compare` in full on this machine; record the per-scene agreement in `research.md` §Agreement and `docs/tolerances.md`; confirm it finishes in under 2 minutes (SC-007) and that a render's JSON states `metal`/`float32`
+- [X] T027 [US2] Implement `Sources/BlackHoleKit/Validation/BackendAgreement.swift`: the standard scenes (default; spin 0.9 at 85°; spin 0.998 at 60°; bare black hole with grid sky at 90°; cool disk), each 960×540 at 4 samples per pixel in the full set (SC-007) and 240×135 in the quick set, the pure comparison function, the metrics of data-model.md `SceneAgreement`, the tolerances from `docs/tolerances.md`, and the `AgreementReport`
+- [X] T028 [US2] Implement `Sources/bhsim/CompareCommand.swift` (`bhsim compare [--quick]`, table output, exit codes 0, 1 and 5) and register it in `Sources/bhsim/Bhsim.swift`
+- [X] T029 [US2] Run `bhsim compare` in full on this machine; record the per-scene agreement in `research.md` §Agreement and `docs/tolerances.md`; confirm it finishes in under 2 minutes (SC-007) and that a render's JSON states `metal`/`float32`
 
 **Checkpoint**: User Stories 1 and 2 both work; the agreement is measurable on demand.
 

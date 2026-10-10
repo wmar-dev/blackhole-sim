@@ -229,3 +229,17 @@ The serial hybrid bound is set by the CPU re-trace of the flagged 7 % of rays (t
 - Agreement tests (`MetalAgreementTests`, 240×135, spin 0/0.9/0.998): outcome ≥ 99.9 %, crossing radius p99 < 1e-3, sky direction ≤ 1e-4 rad for ≥ 99.9 %, disk/horizon pixel radiance p99 < 1 % all pass. GPU shadow radius of a Schwarzschild hole is within 1 % of analytic.
 - The tolerance sweep of the spike fixed the values recorded in `docs/tolerances.md` (GPU section). T023 (double-buffered overlap of CPU shading with GPU tracing) was not needed to meet SC-001 and is deferred to the T033 measurement at 4K×16 spp.
 - Quickstart step 4 (GPU, spin 0, 90°, fov 12): shadow angular radius 0.051373 rad vs analytic 0.051462 (0.17 %).
+
+## Agreement (Phase 4, US2)
+
+`bhsim compare` (5 scenes, 960×540 at 4 spp; ray-level comparison on one ray per pixel centre, pixel-level on the full renders) on the M4 finished in **40 s** (SC-007: < 2 min) and passed every scene:
+
+| scene | outcome match | radius p99 | sky ≤ 1e-4 rad | sky max | radiance p99 / max | refined on CPU | speed-up |
+|-------|---------------|-----------|----------------|---------|--------------------|----------------|----------|
+| default | 100 % | 6.2e-7 | 99.993 % | 2.5e-3 | 0.0001 % / 0.040 % | 3.9 % | 5.0× |
+| spin 0.9, 85° | 100 % | 6.9e-7 | 99.9985 % | 2.9e-3 | 0.0001 % / 0.13 % | 4.0 % | 8.2× |
+| spin 0.998, 60° | 100 % | 3.2e-7 | 100 % | 5.3e-5 | 0.0000 % / 0.032 % | 3.2 % | 7.4× |
+| bare hole, grid | 100 % | 0 | 99.941 % | 1.1e-2 | 0 / 0 | 3.2 % | 11.7× |
+| cool disk | 100 % | 6.2e-7 | 99.993 % | 2.5e-3 | 0.0001 % / 0.040 % | 3.9 % | 8.9× |
+
+Notes: (1) a handful of sky rays (≤ 0.06 %) differ by more than 1e-4 rad (worst 1.1e-2 rad, near-critical rays that graze the photon sphere); this is within the FR-003 allowance of 0.1 %. (2) The shadow check in `compare` is the GPU–CPU shadow-area difference (< 1 %) for all scenes plus the analytic radius error for the non-spinning edge-on scene (CPU 0.0010 %, GPU 0.0011 %); the Kerr-outline (2 %) check for the GPU is covered in the test suite. (3) The "cool disk" scene's image equals the default's because the HDR output is normalised to the hottest unshifted gas; it still exercises a different accretion-rate path. (4) The first scene's speed-up (5.0×) includes GPU pipeline compilation.

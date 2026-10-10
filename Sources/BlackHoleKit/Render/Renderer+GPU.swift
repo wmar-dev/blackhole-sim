@@ -105,17 +105,8 @@ extension Renderer {
                         let index = (r * width + x) * perPixel + s
                         let ray = raysOut[index]
                         let gpuResult = results[index]
-                        let outcome: RayOutcome
-                        let residual: Double
-                        if gpuResult.isDelicate || gpuResult.outcome >= 4 {
-                            let cpu = tracer.trace(ray)
-                            outcome = cpu.outcome
-                            residual = cpu.maxResidual
-                            refined += 1
-                        } else {
-                            outcome = gpuResult.outcome(constants: ray.constants, kerr: config.kerr)
-                            residual = Double(gpuResult.maxResidual)
-                        }
+                        let (outcome, residual, wasRefined) = resolveGPU(gpuResult, ray: ray)
+                        if wasRefined { refined += 1 }
                         diagnostics.record(outcome, residual: residual)
                         switch outcome {
                         case .disk(_, let index, _):
@@ -156,5 +147,45 @@ extension Renderer {
                              higherOrderFraction: fractionBuffer.map(\.z), unresolvedFraction: fractionBuffer.map(\.w),
                              diagnostics: diagnostics, shading: .physical, backend: .metal, referenceRadiance: referenceRadiance,
                              gpuStatistics: statistics)
+    }
+
+    /// The outcome and residual of a ray the GPU traced. A ray the kernel flagged delicate (path near a pole) or did not
+    /// finish is re-traced on the CPU in float64 (research.md D2, mitigation M3); `refined` says so.
+    func resolveGPU(_ result: GPURayResult, ray: CameraRay) -> (outcome: RayOutcome, residual: Double, refined: Bool) {
+        if result.isDelicate || result.outcome >= 4 {
+            let cpu = tracer.trace(ray)
+            return (cpu.outcome, cpu.maxResidual, true)
+        }
+        return (result.outcome(constants: ray.constants, kerr: config.kerr), Double(result.maxResidual), false)
+    }
+
+    /// Outcomes of the given rays traced on the GPU backend (with the CPU refinement of `resolveGPU`), in bands.
+    func gpuOutcomes(of rays: [CameraRay]) throws -> [RayOutcome] {
+        guard let gpu else { preconditionFailure("gpuOutcomes needs the GPU backend") }
+        let parameters = GPUKernelParameters(
+            config: config, relativeTolerance: Float(NumericalDefaults.gpuRelativeTolerance),
+            absoluteTolerance: Float(NumericalDefaults.gpuAbsoluteTolerance),
+            stepsPerPass: UInt32(NumericalDefaults.gpuStepsPerPass), stepBudget: UInt32(config.maxStepsPerRay))
+        let band = min(max(rays.count, 1), NumericalDefaults.gpuBandSamples)
+        let buffers = try gpu.makeBuffers(capacity: band)
+        var outcomes = [RayOutcome](repeating: .captured, count: rays.count)
+        var start = 0
+        while start < rays.count {
+            let count = min(band, rays.count - start)
+            for i in 0..<count { buffers.inputPointer[i] = GPURayInput(rays[start + i]) }
+            try gpu.run(buffers: buffers, rayCount: count, parameters: parameters)
+            let results = SendablePointer(buffers.resultPointer)
+            let base = start
+            outcomes.withUnsafeMutableBufferPointer { out in
+                let target = SendablePointer(out.baseAddress!)
+                DispatchQueue.concurrentPerform(iterations: (count + 255) / 256) { chunk in
+                    for i in (chunk * 256)..<min(count, (chunk + 1) * 256) {
+                        target[base + i] = resolveGPU(results[i], ray: rays[base + i]).outcome
+                    }
+                }
+            }
+            start += count
+        }
+        return outcomes
     }
 }

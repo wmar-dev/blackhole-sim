@@ -26,7 +26,7 @@ Runs the backend agreement check (FR-007): renders a standard set of scenes with
 | `--quick` | off | Use smaller images (for a fast smoke test) |
 
 **stdout**: a table with one row per scene: ray-outcome match fraction, crossing-radius difference, sky-direction difference,
-99th-percentile and maximum radiance difference (disk and horizon pixels), shadow-outline error for each backend, GPU residual statistics, CPU and GPU time and the speed-up, each
+99th-percentile and maximum radiance difference (disk and horizon pixels), shadow-area difference between the backends (and, for the non-spinning edge-on scene, each backend's shadow-radius error against the analytic value), GPU residual statistics, CPU and GPU time and the speed-up, each
 with a PASS or FAIL against its tolerance, then an overall line.
 
 **Exit codes**: 0 all scenes pass; 1 at least one quantity is outside its tolerance (the failing scene and
