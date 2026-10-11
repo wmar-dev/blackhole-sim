@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Select Xcode 27.0
         # The xcode-27 image's default Xcode (build 27A266a, the same build as the local toolchain). The image also
@@ -40,7 +40,7 @@ jobs:
           ffmpeg -hide_banner -encoders | grep -q libx264
 
       - name: Cache SwiftPM and build artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             .build
