@@ -3,10 +3,10 @@ import Testing
 @testable import BlackHoleKit
 
 /// The built-in AVFoundation encoder (always available).
-@Suite(.serialized) struct AVFoundationEncoderTests {
+@Suite(.serialized, .enabled(if: MovieTestSupport.avfoundationCanEncode)) struct AVFoundationEncoderTests {
     private func encoder() -> any MovieEncoder { AVFoundationEncoder() }
 
-    @Test(.enabled(if: MovieTestSupport.avfoundationCanEncode)) func flatColourFramesComeOutInOrderWithTheRightTimingAndSize() async throws {
+    @Test func flatColourFramesComeOutInOrderWithTheRightTimingAndSize() async throws {
         let dir = try TempDirectory()
         let colours = MovieTestSupport.distinctColours(24)
         let files = try MovieTestSupport.writeFlatFrames(colours, width: 64, height: 48, directory: dir.file("f"))

@@ -3,7 +3,7 @@ import Testing
 @testable import BlackHoleKit
 
 @Suite(.serialized) struct MovieReaderTests {
-    @Test func readsCountSizeDurationAndRateOfAMovie() async throws {
+    @Test(.enabled(if: MovieTestSupport.avfoundationCanEncode)) func readsCountSizeDurationAndRateOfAMovie() async throws {
         let dir = try TempDirectory()
         let colours = MovieTestSupport.distinctColours(12)
         let movie = dir.file("flat.mp4")
@@ -15,7 +15,7 @@ import Testing
         #expect(abs(reader.duration - 0.5) < 0.01)
     }
 
-    @Test func decodedFramesAreInTheOrderTheyWereWritten() async throws {
+    @Test(.enabled(if: MovieTestSupport.avfoundationCanEncode)) func decodedFramesAreInTheOrderTheyWereWritten() async throws {
         let dir = try TempDirectory()
         let colours = MovieTestSupport.distinctColours(12)
         let movie = dir.file("flat.mp4")

@@ -2,14 +2,14 @@ import Foundation
 import Testing
 @testable import BlackHoleKit
 
-@Suite(.serialized) struct MovieAssemblerTests {
+@Suite(.serialized, .enabled(if: MovieTestSupport.avfoundationCanEncode)) struct MovieAssemblerTests {
     private func options(_ dir: TempDirectory, output: String = "out/movie.mp4", force: Bool = false) -> MovieAssembler.Options {
         var o = MovieAssembler.Options(folder: dir.file("frames"), output: dir.file(output))
         o.fps = 24; o.force = force; o.encoder = .avfoundation
         return o
     }
 
-    @Test(.enabled(if: MovieTestSupport.avfoundationCanEncode)) func assemblesAndReportsTheSummary() async throws {
+    @Test func assemblesAndReportsTheSummary() async throws {
         let dir = try TempDirectory()
         try MovieTestSupport.writeFlatFrames(MovieTestSupport.distinctColours(12), width: 64, height: 48, directory: dir.file("frames"))
         let summary = try MovieAssembler.assemble(options(dir))

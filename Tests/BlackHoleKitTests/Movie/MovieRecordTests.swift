@@ -53,7 +53,7 @@ enum MiniSchema {
     }
 }
 
-@Suite(.serialized) struct MovieRecordTests {
+@Suite(.serialized, .enabled(if: MovieTestSupport.avfoundationCanEncode)) struct MovieRecordTests {
     private func animation(parameter: SweepParameter = .inclination, from: Double = 85, to: Double = 60) -> Animation {
         var base = RenderConfig()
         base.width = 64; base.height = 36; base.samplesPerPixel = 1; base.sky.seed = 5

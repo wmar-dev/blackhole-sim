@@ -3,7 +3,7 @@ import Testing
 @testable import BlackHoleKit
 
 /// Ctrl-C during `bhsim movie animate` (User Story 2, scenario 3; plan: interruption).
-@Suite(.serialized) struct MovieInterruptTests {
+@Suite(.serialized, .enabled(if: MovieTestSupport.avfoundationCanEncode)) struct MovieInterruptTests {
     @Test func sigintStopsCleanlyKeepsFinishedFramesAndARerunCompletes() throws {
         let dir = try TempDirectory()
         let movie = dir.file("sweep.mp4")

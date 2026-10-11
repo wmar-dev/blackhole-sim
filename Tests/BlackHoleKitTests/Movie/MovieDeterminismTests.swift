@@ -45,7 +45,7 @@ import Testing
         #expect(ra.movie.encoder.reproducibleFile)
     }
 
-    @Test func withTheBuiltInEncoderFramesAndRecordRepeatAndTheMovieIsEquivalent() async throws {
+    @Test(.enabled(if: MovieTestSupport.avfoundationCanEncode)) func withTheBuiltInEncoderFramesAndRecordRepeatAndTheMovieIsEquivalent() async throws {
         let a = try TempDirectory(), b = try TempDirectory()
         let ra = try make(.avfoundation, in: a), rb = try make(.avfoundation, in: b)
         #expect(try samePNGs(a, b), "the PNG frames are exactly reproducible with either encoder")
@@ -59,7 +59,7 @@ import Testing
         }
     }
 
-    @Test func aResumedRunEqualsAnUninterruptedOneInFramesAndRecord() throws {
+    @Test(.enabled(if: MovieTestSupport.avfoundationCanEncode)) func aResumedRunEqualsAnUninterruptedOneInFramesAndRecord() throws {
         let whole = try TempDirectory(), split = try TempDirectory()
         let expected = try make(.avfoundation, in: whole)
         #expect(throws: MovieError.cancelled) { _ = try make(.avfoundation, in: split, cancelAfter: 3) }

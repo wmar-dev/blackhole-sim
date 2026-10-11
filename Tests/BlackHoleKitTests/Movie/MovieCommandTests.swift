@@ -3,7 +3,7 @@ import Testing
 @testable import BlackHoleKit
 
 /// `bhsim movie ...` through the built executable.
-@Suite(.serialized) struct MovieCommandTests {
+@Suite(.serialized, .enabled(if: MovieTestSupport.avfoundationCanEncode)) struct MovieCommandTests {
     private func frames(_ count: Int = 12, width: Int = 64, height: Int = 48) throws -> TempDirectory {
         let dir = try TempDirectory()
         try MovieTestSupport.writeFlatFrames(MovieTestSupport.distinctColours(count), width: width, height: height, directory: dir.file("frames"))
