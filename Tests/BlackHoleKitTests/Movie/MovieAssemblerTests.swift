@@ -9,7 +9,7 @@ import Testing
         return o
     }
 
-    @Test func assemblesAndReportsTheSummary() async throws {
+    @Test(.enabled(if: MovieTestSupport.avfoundationCanEncode)) func assemblesAndReportsTheSummary() async throws {
         let dir = try TempDirectory()
         try MovieTestSupport.writeFlatFrames(MovieTestSupport.distinctColours(12), width: 64, height: 48, directory: dir.file("frames"))
         let summary = try MovieAssembler.assemble(options(dir))

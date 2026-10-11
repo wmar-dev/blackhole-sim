@@ -102,6 +102,10 @@ enum MovieTestSupport {
         return directories.contains { FileManager.default.isExecutableFile(atPath: $0 + "/ffmpeg") }
     }()
 
+    /// False on GitHub-hosted runners (`GITHUB_ACTIONS` is set): their VM has no video encoder, so `AVAssetWriter` never
+    /// completes a movie and `finish()` waits out its timeout. Tests that write a movie with AVFoundation skip there.
+    static let avfoundationCanEncode = ProcessInfo.processInfo.environment["GITHUB_ACTIONS"] == nil
+
     /// The sRGB transfer-function tag for AVFoundation writers (macOS 15+; BT.709 before that).
     static var srgbTransfer: String {
         if #available(macOS 15, *) { return AVVideoTransferFunction_IEC_sRGB }

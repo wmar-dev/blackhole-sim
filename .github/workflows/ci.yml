@@ -53,4 +53,6 @@ jobs:
         run: swift build -c release
 
       - name: Test
+        # A healthy run takes about 11 minutes; a hung test process once held the job for the full hour.
+        timeout-minutes: 25
         run: swift test
