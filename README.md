@@ -1,4 +1,4 @@
-# blackhole-sim
+# Blackhole Simulation
 
 Physically accurate images of a black hole. Every pixel is a light ray traced backward through the curved
 spacetime of a Kerr (rotating) black hole, from a static observer to the horizon, a thin accretion disk, or the
