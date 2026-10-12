@@ -2,7 +2,7 @@
 
 Physically accurate images of a black hole. Every pixel is a light ray traced backward through the curved
 spacetime of a Kerr (rotating) black hole, from a static observer to the horizon, a thin accretion disk, or the
-distant sky. The disk's colour and brightness come from the Novikov–Thorne temperature profile with the full
+distant sky. The disk's color and brightness come from the Novikov–Thorne temperature profile with the full
 relativistic frequency shift.
 
 The approach is the one behind the black hole "Gargantua" in the film *Interstellar* (2014), whose images were
@@ -129,14 +129,14 @@ in [docs/tolerances.md](docs/tolerances.md).
 ## What is and isn't modeled
 
 Modeled: Kerr geodesics, a static observer with a pinhole camera, an opaque thin equatorial disk with the
-Novikov–Thorne flux, gravitational redshift, Doppler shift and beaming, blackbody colour, higher-order disk
+Novikov–Thorne flux, gravitational redshift, Doppler shift and beaming, blackbody color, higher-order disk
 images (up to 3 plane crossings), a seeded synthetic star field.
 
 Not modeled: disk thickness, jets, polarization, radiative transfer, observer motion, charge, animation,
 real sky surveys. A hot (stellar-mass) disk looks nearly uniform blue-white in the visible band because it is in
-the Rayleigh–Jeans tail; use `--mass 1e9 --accretion-rate 1e-4` for a disk whose colour varies visibly. Every
+the Rayleigh–Jeans tail; use `--mass 1e9 --accretion-rate 1e-4` for a disk whose color varies visibly. Every
 approximation, with its validity and error, is listed in [docs/physics.md](docs/physics.md).
-For a physicist's walk-through of the method, from Kerr geodesics to the colour of a pixel, with a worked
+For a physicist's walk-through of the method, from Kerr geodesics to the color of a pixel, with a worked
 example ray, see [docs/how-it-works.md](docs/how-it-works.md).
 
 ## Project layout

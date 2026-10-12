@@ -52,8 +52,8 @@ All Technical Context unknowns are resolved below. Equations are cited so each c
 
 ### D6. Background sky (spec FR-005)
 
-- **Decision**: Rays that reach r_sky are assigned their asymptotic direction, taken as their direction of travel in the static orthonormal frame at r_sky, with components (v_r, v_θ, v_φ) converted to the Cartesian unit vector v_r r̂ + v_θ θ̂ + v_φ φ̂. (A point's position direction differs from the asymptotic direction by about b/r_sky, so position is not used.) Default sky is a seeded procedural star field: N stars drawn uniformly on the sphere with blackbody colors from a documented temperature distribution and a documented brightness distribution. Each star is a small angular disc of constant surface brightness, so lensing magnifies the star's apparent size and flux automatically (surface brightness is conserved). The selectable reference pattern is a celestial latitude/longitude grid.
-- **Rationale**: Treating stars as discs rather than points makes lensing magnification emerge from sampling, which is physically correct and needs no analytic Jacobian.
+- **Decision**: Rays that reach r_sky are assigned their asymptotic direction, taken as their direction of travel in the static orthonormal frame at r_sky, with components (v_r, v_θ, v_φ) converted to the Cartesian unit vector v_r r̂ + v_θ θ̂ + v_φ φ̂. (A point's position direction differs from the asymptotic direction by about b/r_sky, so position is not used.) Default sky is a seeded procedural star field: N stars drawn uniformly on the sphere with blackbody colors from a documented temperature distribution and a documented brightness distribution. Each star is a small angular disk of constant surface brightness, so lensing magnifies the star's apparent size and flux automatically (surface brightness is conserved). The selectable reference pattern is a celestial latitude/longitude grid.
+- **Rationale**: Treating stars as disks rather than points makes lensing magnification emerge from sampling, which is physically correct and needs no analytic Jacobian.
 - **Approximation**: Stopping at finite r_sky and treating the direction of travel there as asymptotic. The bending remaining beyond r_sky is about M·b/r_sky². With r_sky = max(1000, 10 r_o) M this is at most about 1e-4 rad for b up to 100 M. It is bounded by the sky-direction test (Validation 11) against the exact Schwarzschild deflection.
 
 ### D7. Radiometry and output
@@ -84,7 +84,7 @@ All Technical Context unknowns are resolved below. Equations are cited so each c
 | Finite ray-termination radius | Rays beyond r_sky travel straight; direction of travel at r_sky is used | Remaining bending about M·b/r_sky² (≲ 1e-4 rad at b = 100 M) | Sky-direction test vs. exact deflection |
 | Horizon cutoff at r₊ + 1e-3 | Rays that reach this radius are captured | Photons that near the horizon cannot return | Negligible; rays here are black by definition |
 | Neglected beyond 3 plane crossings | Contributions from higher-order images are small and thin | Visible as slightly under-resolved photon ring | See Risks |
-| Star discs of constant surface brightness | Stars unresolved in reality | Illustrative sky | Documented as synthetic |
+| Star disks of constant surface brightness | Stars unresolved in reality | Illustrative sky | Documented as synthetic |
 
 ## Validation (Principle III)
 

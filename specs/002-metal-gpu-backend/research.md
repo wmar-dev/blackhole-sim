@@ -33,11 +33,11 @@ Both runs: 0 unresolved rays, maximum residual 2.3×10⁻⁹ and 2.7×10⁻⁹.
 - **Decision**: The GPU kernel integrates each ray and classifies it. It returns, per ray, an outcome (captured,
   disk hit, sky, unresolved), the crossing index and face, the radius at the hit or the final state, the maximum
   residual and the step count. The CPU uses the existing float64 code for everything after that: camera rays before
-  the call, and after it the shift factor, blackbody colour, star-field and grid lookup, sample averaging, tone
+  the call, and after it the shift factor, blackbody color, star-field and grid lookup, sample averaging, tone
   mapping and file output.
 - **Rationale**: Integration is about 90 % of the cost (a 1080p render spends ≈ 17 s of 21 s in it). Shading needs
-  a 32 MB star-grid structure and the Planck integral, which are awkward on a GPU and would add float32 colour
-  error for no speed-up. With this split, a colour difference between the backends can only come from a ray whose
+  a 32 MB star-grid structure and the Planck integral, which are awkward on a GPU and would add float32 color
+  error for no speed-up. With this split, a color difference between the backends can only come from a ray whose
   *outcome or hit radius* differs, which is exactly what the agreement report measures. The camera rays are
   generated in float64 on the CPU and converted to float32 for upload (relative error 6×10⁻⁸ in L and Q, harmless).
 - **Alternatives considered**: (a) Full GPU pipeline including shading: more speed-up in principle but the extra
@@ -61,7 +61,7 @@ Both runs: 0 unresolved rays, maximum residual 2.3×10⁻⁹ and 2.7×10⁻⁹.
     expected fraction of rays that differ is ≈ 10⁻⁶, three orders below the 10⁻³ allowance.
   - Higher-order (photon-ring) images are the most sensitive: they cover ≈ 10⁻³ of the image and could see ≈ 10 %
     misclassification, still ≈ 10⁻⁴ of rays.
-  - **Star radiance is steeper than the geometry.** A star is a Gaussian of width σ = 2.5×10⁻⁴ rad, so a sample at distance d from its centre changes by about d·Δ/σ² relative for a direction error Δ: 10⁻⁵ rad gives up to ~4 % at d = σ, although the geometry agrees to 10⁻⁵. Roughly 3 % of pixels see a star (200,000 stars), more than a 99th-percentile statistic ignores, so radiance agreement is judged on disk and horizon pixels, and sky rays through their direction (angular difference ≤ 10⁻⁴ rad). This was found in the pre-implementation analysis (F1).
+  - **Star radiance is steeper than the geometry.** A star is a Gaussian of width σ = 2.5×10⁻⁴ rad, so a sample at distance d from its center changes by about d·Δ/σ² relative for a direction error Δ: 10⁻⁵ rad gives up to ~4 % at d = σ, although the geometry agrees to 10⁻⁵. Roughly 3 % of pixels see a star (200,000 stars), more than a 99th-percentile statistic ignores, so radiance agreement is judged on disk and horizon pixels, and sky rays through their direction (angular difference ≤ 10⁻⁴ rad). This was found in the pre-implementation analysis (F1).
   - The CPU's own residual bound (10⁻⁶) is a float64 test bound; for the GPU the requirement is the spec's
     10⁻³ for 99.9 % of rays, which float32 meets comfortably.
 - **Rationale**: Hardware forces float32; the rest follows from measuring against the validated float64 reference
@@ -78,7 +78,7 @@ Both runs: 0 unresolved rays, maximum residual 2.3×10⁻⁹ and 2.7×10⁻⁹.
 - **Rationale**: Bounds the duration of every GPU command (a few milliseconds), which avoids the operating system's
   GPU watchdog regardless of the slowest ray, and makes progress reporting natural. Rays take 50–150 steps typically
   but up to ≈ 800 near the critical curve, so most rays finish in the first pass and stragglers cost only cheap
-  early-exit threads in later passes. Neighbouring pixels have similar step counts, so SIMD-group divergence is
+  early-exit threads in later passes. Neighboring pixels have similar step counts, so SIMD-group divergence is
   moderate.
 - **Alternatives considered**: One long kernel per band (risks the watchdog and gives no progress); queue compaction
   with persistent threads (more complex; revisit only if the spike shows divergence is the bottleneck, risk R2).
@@ -176,7 +176,7 @@ A bare-black-hole float32 kernel, measured against the float64 CPU backend on 64
 
 1. The float64 CPU integrator run at the GPU's tolerance (10⁻⁵) shows the same 740 bad rays and the same 0.028 rad worst case, so a tolerance of 10⁻⁵ on all components is simply too loose for direction accuracy. This is not a float32 effect.
 2. Tightening only the angular components (μ, dμ/dλ′, φ), which alone fix the final direction, to 10⁻⁶ removes the error for every ray that stays away from a pole (max|μ| < 0.99): 2 of 14,304 rays above 10⁻⁴ rad, worst 3.5×10⁻⁴ rad at first; with the final settings the worst is 5.7×10⁻⁵ rad.
-3. All the remaining bad rays pass close to a pole (|μ| > 0.99; all of them with L ≈ 0.14, the strip of the image around the vertical centre line). Tightening the tolerance to 3×10⁻⁷ does not help them, and the worst error grows (0.14 rad), while the float64 integrator needs 10⁻⁸ for them. This is consistent with a conditioning floor: near the pole the polar first integral is a difference of nearly equal numbers, so float32 drift in that invariant shifts the ray's closest approach to the axis by a few percent, and the azimuthal jump of π across the pole inherits that error (about 0.05 rad).
+3. All the remaining bad rays pass close to a pole (|μ| > 0.99; all of them with L ≈ 0.14, the strip of the image around the vertical center line). Tightening the tolerance to 3×10⁻⁷ does not help them, and the worst error grows (0.14 rad), while the float64 integrator needs 10⁻⁸ for them. This is consistent with a conditioning floor: near the pole the polar first integral is a difference of nearly equal numbers, so float32 drift in that invariant shifts the ray's closest approach to the axis by a few percent, and the azimuthal jump of π across the pole inherits that error (about 0.05 rad).
 4. Two remedies were tried and **rejected by measurement**: carrying sin²θ as its own state variable (it made the non-polar rays slightly worse and did not fix the polar ones) and limiting the step near the pole (no effect).
 5. **Adopted: mitigation M3.** The kernel records the smallest sin²θ along each ray and flags rays that come closer to a pole than sin²θ = 0.02; the host re-traces exactly those rays in float64 on the CPU. About 7 % of rays (a = 0 and 0.9 at 85°) to 10 % (45°) are flagged.
 
@@ -208,7 +208,7 @@ The serial hybrid bound is set by the CPU re-trace of the flagged 7 % of rays (t
 - **R1, float32 near the photon ring**: some rays misclassify. Estimated ≈ 10⁻⁶–10⁻⁴ of rays; measured by the
   agreement report; mitigation ladder in D2.
 - **R2, SIMD divergence**: rays in one 32-lane group may differ greatly in step count, wasting lanes. Mitigation:
-  ray ordering follows the image (similar neighbours), multi-pass early exit; fall back to compaction if the spike
+  ray ordering follows the image (similar neighbors), multi-pass early exit; fall back to compaction if the spike
   shows it matters.
 - **R3, speed-up smaller than estimated**: CPU work (camera rays, shading, output) is serial with the GPU unless
   double-buffered. Mitigation: overlap bands; measure each stage separately.
@@ -232,7 +232,7 @@ The serial hybrid bound is set by the CPU re-trace of the flagged 7 % of rays (t
 
 ## Agreement (Phase 4, US2)
 
-`bhsim compare` (5 scenes, 960×540 at 4 spp; ray-level comparison on one ray per pixel centre, pixel-level on the full renders) on the M4 finished in **40 s** (SC-007: < 2 min) and passed every scene:
+`bhsim compare` (5 scenes, 960×540 at 4 spp; ray-level comparison on one ray per pixel center, pixel-level on the full renders) on the M4 finished in **40 s** (SC-007: < 2 min) and passed every scene:
 
 | scene | outcome match | radius p99 | sky ≤ 1e-4 rad | sky max | radiance p99 / max | refined on CPU | speed-up |
 |-------|---------------|-----------|----------------|---------|--------------------|----------------|----------|
@@ -242,7 +242,7 @@ The serial hybrid bound is set by the CPU re-trace of the flagged 7 % of rays (t
 | bare hole, grid | 100 % | 0 | 99.941 % | 1.1e-2 | 0 / 0 | 3.2 % | 11.7× |
 | cool disk | 100 % | 6.2e-7 | 99.993 % | 2.5e-3 | 0.0001 % / 0.040 % | 3.9 % | 8.9× |
 
-Notes: (1) a handful of sky rays (≤ 0.06 %) differ by more than 1e-4 rad (worst 1.1e-2 rad, near-critical rays that graze the photon sphere); this is within the FR-003 allowance of 0.1 %. (2) The shadow check in `compare` is the GPU–CPU shadow-area difference (< 1 %) for all scenes plus the analytic radius error for the non-spinning edge-on scene (CPU 0.0010 %, GPU 0.0011 %); the Kerr-outline (2 %) check for the GPU is covered in the test suite. (3) The "cool disk" scene's image equals the default's because the HDR output is normalised to the hottest unshifted gas; it still exercises a different accretion-rate path. (4) The first scene's speed-up (5.0×) includes GPU pipeline compilation.
+Notes: (1) a handful of sky rays (≤ 0.06 %) differ by more than 1e-4 rad (worst 1.1e-2 rad, near-critical rays that graze the photon sphere); this is within the FR-003 allowance of 0.1 %. (2) The shadow check in `compare` is the GPU–CPU shadow-area difference (< 1 %) for all scenes plus the analytic radius error for the non-spinning edge-on scene (CPU 0.0010 %, GPU 0.0011 %); the Kerr-outline (2 %) check for the GPU is covered in the test suite. (3) The "cool disk" scene's image equals the default's because the HDR output is normalized to the hottest unshifted gas; it still exercises a different accretion-rate path. (4) The first scene's speed-up (5.0×) includes GPU pipeline compilation.
 
 ## Large renders (Phase 5, US3)
 

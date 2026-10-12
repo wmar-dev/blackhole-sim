@@ -6,7 +6,7 @@
 
 ## Summary
 
-Add an opt-in GPU backend that traces the rays on the Mac's GPU while everything that decides the *colour* of a pixel stays on the CPU in float64. The GPU does the one expensive thing, integrating the Kerr geodesics in float32 and classifying each ray (horizon, disk crossing, sky), and returns a compact record per ray. The existing CPU code then shades from those records exactly as it does today (blackbody at g·T, star-field lookup, averaging, tone mapping, output). The CPU backend is untouched and remains the reference.
+Add an opt-in GPU backend that traces the rays on the Mac's GPU while everything that decides the *color* of a pixel stays on the CPU in float64. The GPU does the one expensive thing, integrating the Kerr geodesics in float32 and classifying each ray (horizon, disk crossing, sky), and returns a compact record per ray. The existing CPU code then shades from those records exactly as it does today (blackbody at g·T, star-field lookup, averaging, tone mapping, output). The CPU backend is untouched and remains the reference.
 
 Because Apple GPUs have no 64-bit floats, the plan is built around proving agreement: a spike first measures speed and agreement on a small ray set (go/no-go); work is split into short passes so the system watchdog never fires; images are processed in row bands so memory is bounded; and a backend agreement check compares both backends ray by ray. If float32 cannot meet the tolerances, a documented mitigation ladder applies (tighter control, compensated accumulation, re-tracing only the delicate rays on the CPU), and if that fails the feature ends by documenting findings and leaving the backend disabled (FR-012).
 
@@ -36,7 +36,7 @@ Because Apple GPUs have no 64-bit floats, the plan is built around proving agree
 
 | Principle | Gate | Status |
 |-----------|------|--------|
-| I. Accurate Physics | The GPU integrates the same equations (Mino time in u = 1/r, same potentials, same crossing logic). The one new approximation, float32 arithmetic, is documented with its regime, mitigation and a *measured* error (the agreement report). Shading is not ported, so colour physics is identical by construction. | PASS, conditional on the agreement gate below |
+| I. Accurate Physics | The GPU integrates the same equations (Mino time in u = 1/r, same potentials, same crossing logic). The one new approximation, float32 arithmetic, is documented with its regime, mitigation and a *measured* error (the agreement report). Shading is not ported, so color physics is identical by construction. | PASS, conditional on the agreement gate below |
 | II. Explicit Units and Conventions | No change: geometrized units, same conventions; the buffer layouts between Swift and the kernel are specified in `contracts/gpu-buffers.md` so units and field meanings are explicit | PASS |
 | III. Validation Against Known Results (Test-First) | Agreement tests (backend vs. CPU reference, which is itself validated against independent references) are written before the kernel passes them; GPU renders must also meet the original shadow, outline, deflection and residual criteria | PASS (enforced in tasks) |
 | IV. Numerical Rigor and Reproducibility | Precision choice is forced by hardware and justified in research D2; mitigation ladder and measurement plan defined; determinism on one machine is a requirement and a test; fast-math is disabled | PASS |
@@ -98,4 +98,4 @@ No constitution violations. One deliberate cost is recorded:
 
 | Added complexity | Why needed | Simpler alternative rejected because |
 |------------------|------------|--------------------------------------|
-| A second implementation of the integrator and plane-crossing logic (in the kernel) | The feature is GPU acceleration; the kernel must run the integration | Running everything on the CPU is the status quo and gives no acceleration. Porting shading as well was rejected (research D1) as it adds float32 colour error and a 32 MB star-grid structure for no speed benefit. |
+| A second implementation of the integrator and plane-crossing logic (in the kernel) | The feature is GPU acceleration; the kernel must run the integration | Running everything on the CPU is the status quo and gives no acceleration. Porting shading as well was rejected (research D1) as it adds float32 color error and a 32 MB star-grid structure for no speed benefit. |

@@ -20,7 +20,7 @@ Validation (FR-004): at least one frame; one prefix; no gaps unless allowed; equ
 | from, to | Start and end values; frame i uses from + (to − from)·i/(N − 1) |
 | fps, duration | Frame rate and length in seconds; N = round(duration × fps), N ≥ 1 |
 | base | The `RenderConfig` shared by all frames (including backend, seed, size, samples) |
-| referenceRadiance | Common normalisation: the largest per-frame reference over the sweep (research D5) |
+| referenceRadiance | Common normalization: the largest per-frame reference over the sweep (research D5) |
 | frameConfig(i) | `base` with the parameter set and `referenceRadianceOverride` set |
 
 Validation: every `frameConfig(i)` passes `RenderConfig.validate()` before any frame is rendered.
@@ -37,7 +37,7 @@ The existing render metadata (inputs, units, backend, precision, reference radia
 | codec, container | `h264`, `mp4` |
 | fps, frameCount, duration | Timing |
 | width, height | Picture size |
-| colour | Primaries BT.709, matrix BT.709, transfer sRGB, limited range, 4:2:0 |
+| color | Primaries BT.709, matrix BT.709, transfer sRGB, limited range, 4:2:0 |
 | encoder | name (`ffmpeg` or `avfoundation`), version, quality preset and the setting it maps to, and whether the file bytes are reproducible |
 
 ## MovieRecord (`<movie>.json`, schema in `contracts/movie-record.schema.json`)
@@ -57,4 +57,4 @@ The existing render metadata (inputs, units, backend, precision, reference radia
 
 ## Relationships
 
-An `Animation` produces one `RenderConfig` per frame; each render yields a PNG and a `FrameRecord`; the PNGs form a `FrameSequence`, which `MovieEncoder` turns into a `Movie`; the `MovieRecord` summarises all of it. `assemble` starts from an existing `FrameSequence` and writes a `MovieRecord` with `source = assembled` (no animation or per-frame diagnostics unless the frame JSONs are present).
+An `Animation` produces one `RenderConfig` per frame; each render yields a PNG and a `FrameRecord`; the PNGs form a `FrameSequence`, which `MovieEncoder` turns into a `Movie`; the `MovieRecord` summarizes all of it. `assemble` starts from an existing `FrameSequence` and writes a `MovieRecord` with `source = assembled` (no animation or per-frame diagnostics unless the frame JSONs are present).

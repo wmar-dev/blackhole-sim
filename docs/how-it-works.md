@@ -111,7 +111,7 @@ closest to the hole.
 **Shadow.** The captured region. Its angular radius for a = 0 and a static observer at r is
 arcsin[3√3 √(1 − 2/r) / r]: the 3√3 is the critical impact parameter, the √(1 − 2/r) is the static observer's
 redshift of angles. For a spinning hole it is the D-shaped outline of section 2, displaced from the line of sight to
-the centre: for a = 0.9 at i = 90° and r_o = 100 it extends 6.76 on the right and 2.84 on the left (in units of
+the center: for a = 0.9 at i = 90° and r_o = 100 it extends 6.76 on the right and 2.84 on the left (in units of
 r_o·tan θ).
 
 **Crossings and image order.** Let the *n-th image* of the disk be the set of pixels whose ray reaches the disk at its
@@ -152,9 +152,9 @@ where uᵗ = [−g_tt − 2Ωg_tφ − Ω²g_φφ]^{−1/2} and ν_obs is the ob
 gravitational redshift, transverse Doppler shift and Doppler beaming in one factor, and for a = 0 face-on (L = 0) it
 reduces to √(1 − 3/r)/√(1 − 2/r_o), which the tests check.
 
-**Brightness and colour.** Along a ray I_ν/ν³ is invariant (Liouville), so I_ν,obs(ν) = g³ I_ν,em(ν/g). For a
+**Brightness and color.** Along a ray I_ν/ν³ is invariant (Liouville), so I_ν,obs(ν) = g³ I_ν,em(ν/g). For a
 blackbody, B_ν/ν³ depends on ν/T only, hence the observed spectrum is exactly a blackbody at temperature gT; the
-bolometric intensity scales as g⁴. The pixel colour is that Planck spectrum integrated against the CIE 1931 colour
+bolometric intensity scales as g⁴. The pixel color is that Planck spectrum integrated against the CIE 1931 color
 matching functions, converted to linear sRGB (negative out-of-gamut components clipped), and divided by the
 Y-weighted radiance of the hottest unshifted disk emission ("reference radiance", stored in the metadata), so 1.0 in
 the EXR means "as bright as the brightest unshifted gas".
@@ -163,11 +163,11 @@ the EXR means "as bright as the brightest unshifted gas".
 at f = 0.1, T_peak ≈ 4×10⁶ K and B_ν(gT) ≈ 2ν²k·gT/c², so the visible brightness scales as g, not g⁴, and the hue is
 nearly constant. The default image is therefore uniformly blue-white with a modest left–right asymmetry (about 1.6×).
 A supermassive hole at low accretion rate (peak ≈ 7000 K, `--mass 1e9 --accretion-rate 1e-4`) shows the 11× asymmetry
-and strong colour shift. This is physics, not a rendering choice: it is what a visible-light camera would record.
+and strong color shift. This is physics, not a rendering choice: it is what a visible-light camera would record.
 
 **Sky.** Rays that escape are looked up by their direction of travel in the static frame at r_sky (not by position,
 which is off by ≈ b/r_sky: at r_sky = 1000 and b = 10 that is 0.6°, a larger error than the whole lensing feature). The
-star field consists of Gaussian discs of constant surface brightness, so lensing magnification emerges from sampling
+star field consists of Gaussian disks of constant surface brightness, so lensing magnification emerges from sampling
 without computing a Jacobian: a lensed star is stretched into an arc and brightened in proportion because it covers
 more samples. Surface brightness is conserved, but no shift factor is applied to the synthetic stars.
 
@@ -187,16 +187,16 @@ more samples. Surface brightness is conserved, but no shift factor is applied to
 - **Accuracy diagnostic:** the normalized first-integral residuals δ_r = |u′² − R̃|/(E²(1 + a²u²)²) and
   δ_μ = |μ′² − Θ_μ|/(Q + L² + a²E²) are recorded per ray; the default image has a maximum of 2.3×10⁻⁹ against a
   requirement of 10⁻³. Rays that exhaust the step budget are counted as unresolved and excluded from the average,
-  never silently coloured.
+  never silently colored.
 - **Determinism:** each pixel's sample jitter is a hash of (seed, pixel, sample), and tiles are assembled in fixed
   order, so images are byte-identical for any thread count.
 
 ## 7. One ray, start to finish
 
 Default scene (a = 0, 10 M☉ at f = 0.1, observer at r = 100, i = 80°, 1920×1080, 30° field of view). Take the pixel at
-x = 960.5 (the vertical centre line), y = 726.5, 186 pixels below the image centre.
+x = 960.5 (the vertical center line), y = 726.5, 186 pixels below the image center.
 
-1. **Camera.** The pixel lies 0.0005 of the half-width to the right of centre and 0.345 of the half-height below it; the tetrad turns it into E_raw, and after rescaling E = 1, **L = −0.0139, Q = 27.575**, so b = √(L² + Q) =
+1. **Camera.** The pixel lies 0.0005 of the half-width to the right of center and 0.345 of the half-height below it; the tetrad turns it into E_raw, and after rescaling E = 1, **L = −0.0139, Q = 27.575**, so b = √(L² + Q) =
    5.2512: only 1.06 % above the critical value 3√3 = 5.1962. The observer measures the photon's energy as 1.0102
    (the static observer's blueshift 1/√(1 − 2/100)). The launch state satisfies the null condition to machine precision (below 10⁻¹²).
 2. **Integration.** The ray falls toward the hole in u = 1/r, nearly skims the photon sphere, and is bent through
@@ -207,9 +207,9 @@ x = 960.5 (the vertical centre line), y = 726.5, 186 pixels below the image cent
 4. **Emission.** Novikov–Thorne gives T(7.113) = 3.33×10⁶ K for this mass and accretion rate.
 5. **Shift.** Ω = 0.0527 and uᵗ gives g = 0.7676: redshifted, mainly by gravity and the transverse Doppler shift
    (L is tiny, so there is almost no line-of-sight Doppler term for this central-column ray).
-6. **Colour.** The observed spectrum is a blackbody at gT = 2.55×10⁶ K; integrated against the CIE functions and
+6. **Color.** The observed spectrum is a blackbody at gT = 2.55×10⁶ K; integrated against the CIE functions and
    converted to linear sRGB, divided by the reference radiance 3.74×10¹⁰ W m⁻² sr⁻¹, it is (0.429, 0.631, 1.436). Over the
-   whole pixel this sample is averaged with its neighbours (4 samples), tone-mapped for the PNG, and stored unmodified in
+   whole pixel this sample is averaged with its neighbors (4 samples), tone-mapped for the PNG, and stored unmodified in
    the EXR.
 
 For contrast the central pixel has b = 0.020 (almost radial): it takes 19 steps and is captured. A pixel at the very
@@ -230,10 +230,10 @@ T there is 3.2×10⁴ K rather than the millions of kelvin a little further out.
 | Strong lensing is right | A source directly behind the hole forms a closed ring at the predicted 12.29° | `RenderFeaturesTests` |
 | The disk flux is right | Closed form vs conservation integral to 10⁻²⁵; Swift vs reference to 10⁻¹⁴ | `DiskPhysicsTests`, `tools/reference/novikov_thorne.py` |
 | The shift factor is right | Matches a metric-tensor computation to 10⁻¹²; face-on closed form; sign of the Doppler effect | `DiskPhysicsTests` |
-| The colour pipeline is right | Planck → XYZ → sRGB against 1 nm integration of the CIE tables; the g³/g⁴ identities; σ and h, k_B consistency | `PlanckColorTests`, `RadiometryTests` |
+| The color pipeline is right | Planck → XYZ → sRGB against 1 nm integration of the CIE tables; the g³/g⁴ identities; σ and h, k_B consistency | `PlanckColorTests`, `RadiometryTests` |
 | The GPU backend agrees with the CPU | Five scenes, 960×540 at 4 spp: 100 % same outcome, crossing radius 7×10⁻⁷, radiance 99th percentile ≤ 10⁻⁶ | `bhsim compare`, `MetalAgreementTests` |
 | Movie frames are exactly the single renders | First and last frame of a 120-frame GPU animation are byte-identical to single renders; a resumed run equals an uninterrupted one on all 72 frames | `AnimationRunnerTests`, `MovieDeterminismTests`, quickstart |
-| The movie keeps the colours of the frames | Decoded frames within 35 dB PSNR of their PNGs with Apple's and ffmpeg's decoders; saturated colours within 8 levels; a mislabelled colour matrix is detected | `FFmpegEncoderTests`, `AVFoundationEncoderTests` |
+| The movie keeps the colors of the frames | Decoded frames within 35 dB PSNR of their PNGs with Apple's and ffmpeg's decoders; saturated colors within 8 levels; a mislabeled color matrix is detected | `FFmpegEncoderTests`, `AVFoundationEncoderTests` |
 | The renderer is deterministic | Byte-identical output across runs and thread counts | `DeterminismTests`, quickstart |
 
 The reference computations live in `tools/reference/` and are independent of the Swift code (Python with mpmath and
@@ -255,7 +255,7 @@ On an M4 it is 5–12× faster (default scene 5–7×, 4K at 16 samples 7.3×).
 A movie is a sequence of ordinary images. `bhsim movie assemble` turns a folder of numbered PNG frames into an MP4;
 `bhsim movie animate` first renders the frames, sweeping one viewing parameter (inclination, distance or spin) in equal
 steps, and then assembles them. Every frame is a complete render, nothing is interpolated, and all frames share one
-brightness reference so that changes in brightness are physics, not normalisation. Frames are written to disk as they
+brightness reference so that changes in brightness are physics, not normalization. Frames are written to disk as they
 are made, so memory does not grow with the length of the movie and an interrupted run continues where it stopped.
 Because the sample pattern is fixed, the thin photon ring speckles from frame to frame at low sample counts, so
 `animate` uses 9 samples per pixel by default. Encoding uses ffmpeg when installed (reproducible files, smaller) and the
@@ -266,9 +266,9 @@ encoder built into macOS otherwise; the record next to the movie says which one 
 - **Static observer.** Not a geodesic observer; the image is what a hovering observer sees. For r_o ≫ M the
   difference from a distant inertial observer is small, but it is a choice.
 - **Thin opaque disk.** No vertical structure, corona, jet or radiative transfer; disk emission is a pure blackbody
-  with no colour correction, and gas inside r_isco does not radiate.
+  with no color correction, and gas inside r_isco does not radiate.
 - **Three crossings.** Images with n ≥ 4 are dropped, so the photon ring is under-resolved.
-- **Gamut and display.** Out-of-gamut colours are clipped; the PNG uses a fixed −1 stop exposure and an ACES-style
+- **Gamut and display.** Out-of-gamut colors are clipped; the PNG uses a fixed −1 stop exposure and an ACES-style
   curve. The EXR is the physical record.
 - **GPU precision.** The GPU backend is float32; it is validated against, not equal to, the CPU reference. A few sky rays near the photon sphere differ by more than 10⁻⁴ rad.
 - **Movies.** An animation is a series of static views, not a physical evolution, and the file is lossy video: use the PNG/EXR frames for measurements. Speckle of the photon ring between frames at low sample counts is real sampling noise.

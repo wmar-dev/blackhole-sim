@@ -42,7 +42,7 @@ expert's confirmation, which the implementing agent cannot supply.
 Self-review of `out/default.png` / `out/default.exr` (default scene, 1920×1080, 4 samples per pixel) against the
 SC-007 list, including a zoomed inspection of the shadow edge:
 
-- Shadow: dark, circular, centred; radius within 0.006 % of arcsin(3√3·√(1 − 2M/r)/r) (ray-level and from the EXR).
+- Shadow: dark, circular, centerd; radius within 0.006 % of arcsin(3√3·√(1 − 2M/r)/r) (ray-level and from the EXR).
 - Photon ring: a thin bright ring just outside the shadow edge, from the higher-order (second and third crossing)
   images of the disk's inner region.
 - Secondary disk image: the far side of the disk is lensed over the top of the shadow and a second image curls
@@ -54,4 +54,4 @@ SC-007 list, including a zoomed inspection of the shadow edge:
   (`--samples 9` or 16) reduce it.
 
 A domain expert should still confirm the image, in particular the relative brightness of the primary and
-higher-order images and the colour choices (visible-band blackbody, ACES display curve).
+higher-order images and the color choices (visible-band blackbody, ACES display curve).

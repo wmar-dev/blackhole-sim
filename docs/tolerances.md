@@ -37,8 +37,8 @@ The GPU kernel runs in 32-bit floating point; the CPU float64 backend remains th
 | Quantity | Tolerance | Source | Status | Justification |
 |----------|-----------|--------|--------|---------------|
 | Decoded movie frame vs its source PNG (PSNR) | ≥ 35 dB at 640×360 and above, standard quality | spec SC-003, research D7 | chosen (T019) | H.264 with 4:2:0 chroma is lossy. Measured worst frame, ffmpeg CRF 18: 38.8 dB at 640×360, 40.7 dB at 1280×720; built-in encoder: 37–42 dB with the bit-rate floors. 35 dB leaves margin for fine star fields; smaller pictures (160×90: 34.2 dB) are below it and should use `--quality high` |
-| Flat saturated colours through the encoder | ≤ 8 levels per channel | research D7 | chosen | Compression noise on flat areas is ≤ 2 levels; a wrong colour matrix or transfer tag gives ≥ 18 levels, so 8 separates them |
-| Mislabelled-matrix movie must fail the colour check | > 12 levels | research D7 | chosen | Shows the colour test can see a tagging error |
+| Flat saturated colors through the encoder | ≤ 8 levels per channel | research D7 | chosen | Compression noise on flat areas is ≤ 2 levels; a wrong color matrix or transfer tag gives ≥ 18 levels, so 8 separates them |
+| Mislabeled-matrix movie must fail the color check | > 12 levels | research D7 | chosen | Shows the color test can see a tagging error |
 | First/last animation frame vs single render | bit-identical | spec SC-004 | fixed | |
 | Resumed vs uninterrupted animation | bit-identical frames | spec SC-006 | fixed | |
 | ffmpeg movie file, repeated | byte-identical | research D6 | fixed (same machine and ffmpeg version) | |

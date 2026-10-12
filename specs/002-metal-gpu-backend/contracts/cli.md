@@ -5,7 +5,7 @@ listed is unchanged.
 
 ## `bhsim render --backend <cpu|metal>`
 
-| Value | Behaviour |
+| Value | Behavior |
 |-------|-----------|
 | `cpu` (default) | The float64 reference backend. Output is byte-identical to previous versions. |
 | `metal` | Traces rays on the GPU in float32 and shades on the CPU. Accepts every other `render` option unchanged and writes the same three files. |

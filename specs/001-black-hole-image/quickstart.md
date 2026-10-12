@@ -63,7 +63,7 @@ default image byte for byte.
 
 ## 6. Doppler and redshift (User Story 3)
 
-A cool disk (10⁹ M☉, low accretion rate) shows the colour shift clearly:
+A cool disk (10⁹ M☉, low accretion rate) shows the color shift clearly:
 
 ```bash
 .build/release/bhsim render --spin 0.9 --inclination 80 --mass 1e9 --accretion-rate 1e-4 --out out/cool

@@ -34,7 +34,7 @@ Renders a frame sequence by sweeping one parameter, then assembles it. Accepts e
 | `--keep-exr` | off | Also write each frame's 32-bit physical-intensity image |
 | `--encoder`, `--ffmpeg`, `--quality`, `--force` | as above | As above |
 
-Behaviour:
+Behavior:
 
 - Every frame's settings are validated before any frame is rendered. The first invalid frame stops the run with exit code 2 and a message naming the frame number, the swept value and the valid range.
 - Frames already complete from an earlier identical run are kept and skipped; the others are rendered. Changing any option invalidates the frames it affects.
@@ -44,7 +44,7 @@ Behaviour:
 
 ## `bhsim render --reference-radiance <value>` (new, advanced)
 
-Normalise radiance to `value` (Y-weighted W m⁻² sr⁻¹) instead of the hottest unshifted disk emission. Lets a single frame be reproduced exactly as it appears in an animation. Default: unchanged behaviour. `value` must be positive and finite (exit code 2 otherwise).
+Normalize radiance to `value` (Y-weighted W m⁻² sr⁻¹) instead of the hottest unshifted disk emission. Lets a single frame be reproduced exactly as it appears in an animation. Default: unchanged behavior. `value` must be positive and finite (exit code 2 otherwise).
 
 ## Exit codes (complete list after this feature)
 

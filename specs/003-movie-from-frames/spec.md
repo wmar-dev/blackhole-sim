@@ -32,7 +32,7 @@ A user asks for a movie in which one viewing parameter changes smoothly from a s
 
 **Why this priority**: This is how a movie of a black hole is normally made, and it avoids scripting hundreds of separate renders. It depends on User Story 1 for the assembly.
 
-**Independent Test**: Request a 2-second, 24-frame inclination sweep at small size. Check that 48 frames and a movie appear, that the first and last frames are identical to single renders at the start and end values, and that every frame is a complete render, not an interpolation of its neighbours.
+**Independent Test**: Request a 2-second, 24-frame inclination sweep at small size. Check that 48 frames and a movie appear, that the first and last frames are identical to single renders at the start and end values, and that every frame is a complete render, not an interpolation of its neighbors.
 
 **Acceptance Scenarios**:
 
@@ -76,18 +76,18 @@ A user can see afterwards exactly how a movie was made: which frames and setting
 ### Functional Requirements
 
 - **FR-001**: The system MUST create a single video file from a numbered sequence of image files, playing the frames in numerical order at a user-chosen frame rate.
-- **FR-002**: The system MUST accept the display images (8-bit PNG) written by the existing renderer as frames, and MUST keep them unmodified apart from the conversion to the video's colour encoding.
+- **FR-002**: The system MUST accept the display images (8-bit PNG) written by the existing renderer as frames, and MUST keep them unmodified apart from the conversion to the video's color encoding.
 - **FR-003**: The system MUST report the path, frame count, duration, picture size and frame rate of every movie it writes.
 - **FR-004**: The system MUST validate the frame sequence before encoding (existence, numbering, equal sizes) and MUST reject an invalid sequence with a message naming the problem and the first offending frame.
 - **FR-005**: The system MUST NOT overwrite an existing movie file unless the user explicitly asks for it.
 - **FR-006**: The system MUST let the user request an animation in which one viewing parameter (at least the observer's inclination, the observer's distance and the black hole's spin) changes linearly from a start value to an end value over a chosen number of frames or duration.
-- **FR-007**: Every animation frame MUST be a complete render by the existing renderer, on the backend the user selects, with every other option of a single render available and held constant across frames. The system MUST NOT synthesise in-between frames, motion blur or other effects that have no physical basis.
+- **FR-007**: Every animation frame MUST be a complete render by the existing renderer, on the backend the user selects, with every other option of a single render available and held constant across frames. The system MUST NOT synthesize in-between frames, motion blur or other effects that have no physical basis.
 - **FR-008**: The system MUST validate every frame's settings against the same rules as a single render before any frame is rendered, and MUST stop with the same messages and exit code as a single render if any frame is invalid, naming the frame.
 - **FR-009**: The system MUST write animation frames to disk as they are rendered, MUST skip frames already present from an earlier identical run so that an interrupted run can be resumed, and MUST bound its memory use independently of the number of frames.
 - **FR-010**: The system MUST report progress (frame number out of total) during an animation and during encoding.
-- **FR-011**: Rendering the same animation twice on the same machine MUST give identical frames. Per-frame diagnostics (ray counts, residual statistics, unresolved count) MUST be reported for each frame and summarised for the whole movie, with the exit-code policy of a single render applied to the movie as a whole.
+- **FR-011**: Rendering the same animation twice on the same machine MUST give identical frames. Per-frame diagnostics (ray counts, residual statistics, unresolved count) MUST be reported for each frame and summarized for the whole movie, with the exit-code policy of a single render applied to the movie as a whole.
 - **FR-012**: The system MUST write a record next to each movie listing the frame rate, frame count, picture size, the swept parameter and range, the settings common to all frames, the backend and precision, the seed, and the exposure reference used.
-- **FR-013**: In an animation, one exposure reference MUST be used for all frames, so that frame-to-frame brightness changes reflect the physics and not a changing normalisation.
+- **FR-013**: In an animation, one exposure reference MUST be used for all frames, so that frame-to-frame brightness changes reflect the physics and not a changing normalization.
 - **FR-014**: When the video encoder is unavailable or the movie cannot be written, the system MUST fail with a clear message and non-zero exit status and MUST keep the rendered frames.
 - **FR-015**: The scope of the physics of an animation MUST be documented: each frame shows a stationary, axisymmetric black hole and disk seen by a static observer, so a sequence of frames describes a changing viewpoint or changing parameter, not time evolution of the hole, motion of the disk gas, or the relativistic aberration of a moving observer.
 

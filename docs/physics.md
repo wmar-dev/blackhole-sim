@@ -69,17 +69,17 @@ and a photon with E = 1 and angular momentum L received with energy ν_obs by th
 
 This contains gravitational redshift, transverse Doppler shift and Doppler beaming at once.
 
-**Colour and brightness.** I_ν/ν³ is invariant along a ray, so a blackbody of temperature T seen with shift g is
+**Color and brightness.** I_ν/ν³ is invariant along a ray, so a blackbody of temperature T seen with shift g is
 exactly a blackbody of temperature gT (bolometric intensity g⁴σT⁴/π). The spectrum is integrated against the
-CIE 1931 2° colour-matching functions (380–780 nm, 5 nm), converted to linear sRGB (Rec. 709 primaries, D65),
+CIE 1931 2° color-matching functions (380–780 nm, 5 nm), converted to linear sRGB (Rec. 709 primaries, D65),
 and divided by the Y-weighted radiance of the hottest unshifted disk emission, the *reference radiance*
 (recorded in the metadata): 1.0 in the EXR. Out-of-gamut negative components are clipped to zero. **In the
 visible band** a hot disk (T ≫ 10⁴ K, e.g. a stellar-mass black hole) lies in the Rayleigh–Jeans tail, where
 radiance ∝ T, so its brightness scales with g rather than g⁴ and its hue barely changes; cool disks (supermassive
-black holes at low accretion rates) show strong colour shifts.
+black holes at low accretion rates) show strong color shifts.
 
 **Sky.** Rays reaching the sky radius are assigned their direction of travel there (not their position: the two
-differ by about b/r_sky). The default sky is a seeded star field of Gaussian discs (σ = 2.5×10⁻⁴ rad) of constant
+differ by about b/r_sky). The default sky is a seeded star field of Gaussian disks (σ = 2.5×10⁻⁴ rad) of constant
 surface brightness, so lensing magnification emerges from sampling; a celestial latitude/longitude grid can be
 selected for validation. Both are synthetic.
 
@@ -91,18 +91,18 @@ curve per channel, and the sRGB transfer function. This is presentation only; th
 | Approximation | Governing assumption | Validity | Error / control |
 |---|---|---|---|
 | Thin, equatorial, opaque disk | H/r ≪ 1; optically thick | Radiatively efficient thin disks | Geometric thickness neglected |
-| Blackbody emission at the Novikov–Thorne T | Local thermal equilibrium, no colour correction | Qualitative colour accuracy | No spectral hardening or atmosphere model |
+| Blackbody emission at the Novikov–Thorne T | Local thermal equilibrium, no color correction | Qualitative color accuracy | No spectral hardening or atmosphere model |
 | Prograde circular motion, zero emission inside r_isco | Zero-torque inner boundary | Emission from r ≥ r_isco | Matches Novikov–Thorne |
 | Finite ray-termination radius | Direction of travel at r_sky is asymptotic | Remaining bending ≈ M·b/r_sky² | ≲ 2×10⁻⁴ rad measured (b ≤ 50) |
 | Horizon cutoff r₊ + 10⁻³ M | Rays reaching it are captured | Photons that close cannot return | Negligible |
 | At most 3 plane crossings tested | Further higher-order images are thin and dim | See Known limits | Neglect is documented, not hidden |
-| Stars as Gaussian discs | Illustrative sky | Synthetic | Not a catalogue |
-| Out-of-gamut colours clipped | sRGB gamut | Very cool or very hot disks | Affects hue only at gamut edges |
+| Stars as Gaussian disks | Illustrative sky | Synthetic | Not a catalog |
+| Out-of-gamut colors clipped | sRGB gamut | Very cool or very hot disks | Affects hue only at gamut edges |
 | GPU backend: float32 integration | Apple GPUs have no 64-bit floats; step control tightened (radial 10⁻⁵, angular 10⁻⁶); rays passing within sin²θ < 0.02 of a pole re-traced in float64 on the CPU | Same physics, lower arithmetic precision | Measured vs the CPU: 100 % same outcome, crossing radius 99th percentile 7×10⁻⁷, sky direction within 10⁻⁴ rad for ≥ 99.9 % of sky rays, radiance 99th percentile ≤ 10⁻⁴ (see below) |
-| Animation = a sequence of static-observer views | Each frame is a complete, independent render of a stationary, axisymmetric hole and disk; the sweep changes the viewpoint (inclination, distance) or the parameter (spin) between frames | Viewpoint changes of a static scene | No motion of the gas, no light-travel-time delay between frames, no observer-velocity aberration; nothing is interpolated, blurred or synthesised between frames |
+| Animation = a sequence of static-observer views | Each frame is a complete, independent render of a stationary, axisymmetric hole and disk; the sweep changes the viewpoint (inclination, distance) or the parameter (spin) between frames | Viewpoint changes of a static scene | No motion of the gas, no light-travel-time delay between frames, no observer-velocity aberration; nothing is interpolated, blurred or synthesized between frames |
 | One exposure reference per movie | The reference radiance (hottest unshifted disk emission) is fixed for all frames at the largest value of the sweep | Spin sweeps, where the reference differs per frame | Without it brightness would jump for a non-physical reason; measured frame-to-frame luma change 0.7 % in a spin sweep |
-| Lossy video (H.264, 4:2:0 chroma) | The movie is for viewing; the PNG/EXR frames remain the physical record | All sizes | PSNR ≥ 35 dB against the source frames at 640×360 and above (ffmpeg 36–41 dB, built-in encoder 38–42 dB at the default quality); colour of single-pixel stars is blurred by the 4:2:0 subsampling |
-| Unresolved rays excluded from averaging | Counted, never coloured | < 0.1 % of rays in tests | Reported in diagnostics; exit code 4 above 0.1 % |
+| Lossy video (H.264, 4:2:0 chroma) | The movie is for viewing; the PNG/EXR frames remain the physical record | All sizes | PSNR ≥ 35 dB against the source frames at 640×360 and above (ffmpeg 36–41 dB, built-in encoder 38–42 dB at the default quality); color of single-pixel stars is blurred by the 4:2:0 subsampling |
+| Unresolved rays excluded from averaging | Counted, never colored | < 0.1 % of rays in tests | Reported in diagnostics; exit code 4 above 0.1 % |
 
 ## Animations and movies
 
