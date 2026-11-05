@@ -156,7 +156,11 @@ validation against known results, numerical rigor) are in `.specify/memory/const
 
 ## Related video
 
-- Veritasium, [How to Understand What Black Holes Look Like](https://www.youtube.com/watch?v=zUyH3XhpLTo) (YouTube)
+- Kip Thorne, [The Science of Interstellar](https://www.youtube.com/watch?v=u_Xxz8d3VYo) (Ciudad de las Ideas, 2015, YouTube)
+- Kip Thorne, [My Romance with Caltech and with Black Holes, Wormholes, Time Travel](https://www.youtube.com/watch?v=KYMfQNNnP9M) (Caltech, 2019, YouTube)
+- Veritasium, [How to Understand What Black Holes Look Like](https://www.youtube.com/watch?v=zUyH3XhpLTo) (YouTube, 2019)
+- Kip Thorne, [An Odyssey Through the Warped Side of Our Universe](https://www.youtube.com/watch?v=TJcdI68GLb8) (Caltech Astro, 2024, YouTube)
+- PBS Space Time, [Black Holes. Explained. For 2 More Hours.](https://www.youtube.com/watch?v=RG5WhPmwGgk) (YouTube, 2026)
 
 ## License
 
